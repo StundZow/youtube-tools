@@ -1,0 +1,25 @@
+/* PrevYou — retouches minimales sur la carte injectée. */
+
+[data-prevyou] img.prevyou-thumb,
+[data-prevyou] canvas.prevyou-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+[data-prevyou] img.prevyou-avatar {
+  object-fit: cover;
+}
+
+/* Rien ne doit rejouer une preview vidéo ni afficher une progression. */
+[data-prevyou] #mouseover-overlay,
+[data-prevyou] ytd-video-preview,
+[data-prevyou] ytd-thumbnail-overlay-resume-playback-renderer {
+  display: none !important;
+}
+
+[data-prevyou] a {
+  cursor: default;
+}

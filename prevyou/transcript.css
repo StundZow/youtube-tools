@@ -1,0 +1,82 @@
+/* PrevYou — bouton « copier la transcription », posé à côté du bouton J'aime. */
+
+#prevyou-transcript-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  /* Cercle parfait au repos, comme les boutons ronds de YouTube. Le libelle
+     vide est en display:none, sinon le `gap` s'appliquerait quand meme a cote
+     et le bouton deviendrait ovale. */
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin: 0 8px;
+  border: none;
+  border-radius: 18px;
+  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, .05));
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background .12s ease, opacity .12s ease;
+}
+
+#prevyou-transcript-btn:hover {
+  background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, .1));
+}
+
+#prevyou-transcript-btn:disabled {
+  cursor: default;
+}
+
+#prevyou-transcript-btn .prevyou-tr-icon {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+}
+
+#prevyou-transcript-btn .prevyou-tr-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Le libellé n'apparaît qu'au moment du retour (succès / échec) : le bouton
+   s'élargit alors en pilule, puis redevient rond. */
+#prevyou-transcript-btn .prevyou-tr-label {
+  display: none;
+}
+
+#prevyou-transcript-btn[data-state="ok"],
+#prevyou-transcript-btn[data-state="ko"] {
+  width: auto;
+  padding: 0 14px 0 10px;
+}
+
+#prevyou-transcript-btn[data-state="ok"] .prevyou-tr-label,
+#prevyou-transcript-btn[data-state="ko"] .prevyou-tr-label {
+  display: inline;
+  white-space: nowrap;
+}
+
+#prevyou-transcript-btn[data-state="ok"] {
+  color: #2ba640;
+}
+
+#prevyou-transcript-btn[data-state="ko"] {
+  color: #f03;
+}
+
+#prevyou-transcript-btn[data-state="loading"] .prevyou-tr-icon {
+  animation: prevyou-tr-pulse 1s ease-in-out infinite;
+}
+
+@keyframes prevyou-tr-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
