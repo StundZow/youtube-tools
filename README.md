@@ -33,7 +33,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 🖼️ **Injection dans le vrai feed** — accueil, abonnements, résultats de recherche, page de chaîne, colonne de suggestions du lecteur
 - 🎲 **Position aléatoire** — place ta carte quelque part dans la grille plutôt qu'en première position, là où la comparaison est honnête
 - 📝 **Copie de la transcription en CSV** — un bouton à côté du J'aime, timecodes de début et de fin inclus
-- 💾 **Export CSV des vidéos d'une page** — titre, chaîne, vues, date, durée, multiplicateur vidIQ, en un clic
+- 💾 **Export CSV des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
 - 🧬 **Clonage d'une vraie carte** plutôt que du HTML figé — le style et la grille sont toujours ceux du layout courant de YouTube
 - ⚙️ **Paramètres** — activer ou désactiver chaque bouton, et choisir entre presse-papiers et fichier
 - 🌗 **Thème clair / sombre** dans le popup
@@ -76,7 +76,9 @@ Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidé
 
 ## Exporter les vidéos d'une page (CSV)
 
-Un bouton **⤓** est ajouté en haut de la page de résultats, à côté de « À propos de ces résultats » (et dans la barre du haut sur les autres pages). Il copie dans le presse-papiers — ou enregistre un fichier, selon le réglage — toutes les vidéos **actuellement chargées** :
+Un bouton **⤓** est ajouté dans la barre du haut, **juste à gauche de « Créer »**. La barre étant fixe et présente partout, le bouton est disponible sur **toutes les pages YouTube** — accueil, recherche, chaîne, abonnements — et reste visible quand on fait défiler.
+
+Il copie dans le presse-papiers toutes les vidéos **actuellement chargées** :
 
 ```csv
 position,titre,chaine,vues,vues_num,date,duree,multiplicateur,type,url
@@ -99,9 +101,11 @@ En bas du popup, trois interrupteurs :
 |---|---|
 | **Bouton transcription** | affiche ou retire le **☰** à côté du J'aime |
 | **Bouton export vidéos** | affiche ou retire le **⤓** en haut de page |
-| **Enregistrer un fichier** | désactivé (défaut), les deux boutons **copient dans le presse-papiers** ; activé, ils téléchargent un `.csv` |
+| **Enregistrer un fichier** | téléchargement d'un `.csv` **en plus** de la copie |
 
-Le troisième réglage **vaut pour les deux boutons** — ils passent par la même fonction de remise, donc leur comportement ne peut pas diverger. Le libellé au survol suit le réglage : « Copier… » ou « Enregistrer… ».
+La copie dans le presse-papiers a **toujours** lieu ; le fichier vient en supplément. Le troisième réglage **vaut pour les deux boutons** — ils passent par la même fonction de remise, donc leur comportement ne peut pas diverger.
+
+Pourquoi un téléchargement plutôt qu'un fichier collable : **une page web ne peut déposer que du texte dans le presse-papiers**, jamais un fichier. Pour joindre un `.csv` quelque part, il faut donc passer par le fichier téléchargé.
 
 Les changements prennent effet **immédiatement**, sans recharger l'onglet : les scripts écoutent le stockage et posent ou retirent les boutons à la volée. Le BOM UTF-8 n'est ajouté que dans le fichier, jamais dans le presse-papiers — collé dans un agent IA, il n'aurait servi qu'à polluer la première ligne.
 

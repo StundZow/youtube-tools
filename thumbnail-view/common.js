@@ -96,14 +96,17 @@
   }
 
   /**
-   * Presse-papiers par defaut, fichier si le reglage le demande.
-   * Renvoie { ok, mode } pour que le bouton dise ce qui s'est reellement passe.
+   * La copie a TOUJOURS lieu ; le fichier s'ajoute par-dessus si le reglage le
+   * demande. Une page web ne peut pas deposer un vrai fichier dans le
+   * presse-papiers — seulement du texte : le telechargement est donc le seul
+   * moyen d'obtenir un .csv a joindre quelque part.
+   *
+   * Renvoie { ok, copied, file } pour que le bouton dise ce qui s'est passe.
    */
   async function deliver(text, filename) {
-    if (current.saveAsFile) {
-      return { ok: downloadText(text, filename), mode: 'file' };
-    }
-    return { ok: await copyText(text), mode: 'clipboard' };
+    const copied = await copyText(text);
+    const file = current.saveAsFile ? downloadText(text, filename) : false;
+    return { ok: copied || file, copied, file };
   }
 
   /** Morceau de nom de fichier sur : sans accents, sans espaces, borne. */

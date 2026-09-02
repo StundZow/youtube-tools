@@ -322,7 +322,7 @@
   /** Le libelle dit ce que le clic va reellement faire. */
   function hint() {
     return TV.settings.get().saveAsFile
-      ? 'Enregistrer les vidéos chargées de la page en CSV'
+      ? 'Copier les vidéos chargées en CSV et enregistrer le fichier'
       : 'Copier les vidéos chargées de la page en CSV';
   }
 
@@ -343,9 +343,9 @@
       return;
     }
 
-    const { ok, mode } = await TV.deliver(toCsv(rows), fileName());
-    if (!ok) { setState(btn, 'ko', mode === 'file' ? 'Échec' : 'Copie refusée'); return; }
-    setState(btn, 'ok', rows.length + (mode === 'file' ? ' vidéos ⤓' : ' vidéos'));
+    const { ok, file } = await TV.deliver(toCsv(rows), fileName());
+    if (!ok) { setState(btn, 'ko', 'Copie refusée'); return; }
+    setState(btn, 'ok', rows.length + (file ? ' vidéos ⤓' : ' vidéos'));
   }
 
   function build() {
@@ -380,13 +380,15 @@
       return;
     }
 
-    // L'emplacement demande : juste a cote de « A propos de ces resultats ».
-    const header = document.querySelector('#about-these-results');
-    if (header) { header.appendChild(build()); return; }
+    // Dans la barre du haut, juste a gauche du bouton « Creer ». La barre est
+    // fixe et presente sur toutes les pages : le bouton reste donc visible
+    // partout, y compris quand on fait defiler.
+    const buttons = document.querySelector('ytd-masthead #buttons, #masthead #buttons');
+    if (buttons) { buttons.insertBefore(build(), buttons.firstElementChild); return; }
 
-    // Les autres pages n'ont pas cet en-tete : on se rabat sur la barre du haut.
-    const masthead = document.querySelector('ytd-masthead #end, #masthead #end');
-    if (masthead) masthead.insertBefore(build(), masthead.firstChild);
+    // Repli si YouTube reorganisait sa barre.
+    const end = document.querySelector('ytd-masthead #end, #masthead #end');
+    if (end) end.insertBefore(build(), end.firstChild);
   }
 
   let pending = null;

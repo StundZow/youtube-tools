@@ -419,15 +419,15 @@
       return;
     }
 
-    const { ok, mode } = await TV.deliver(toCsv(rows), fileName());
-    if (!ok) { setState(btn, 'ko', mode === 'file' ? 'Échec' : 'Copie refusée'); return; }
-    setState(btn, 'ok', rows.length + (mode === 'file' ? ' lignes ⤓' : ' lignes'));
+    const { ok, file } = await TV.deliver(toCsv(rows), fileName());
+    if (!ok) { setState(btn, 'ko', 'Copie refusée'); return; }
+    setState(btn, 'ok', rows.length + (file ? ' lignes ⤓' : ' lignes'));
   }
 
   /** Le libelle dit ce que le clic va reellement faire. */
   function hint() {
     return TV.settings.get().saveAsFile
-      ? 'Enregistrer la transcription en CSV'
+      ? 'Copier la transcription en CSV et enregistrer le fichier'
       : 'Copier la transcription au format CSV';
   }
 
