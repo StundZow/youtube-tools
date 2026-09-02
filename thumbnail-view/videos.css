@@ -1,6 +1,6 @@
-/* Thumbnail View — bouton « enregistrer les vidéos de la page en CSV ». */
+/* YouTube Tools — bouton « enregistrer les vidéos de la page en CSV ». */
 
-#thumbview-videos-btn {
+#yttools-videos-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -26,17 +26,17 @@
   transition: background .12s ease;
 }
 
-#thumbview-videos-btn:hover {
+#yttools-videos-btn:hover {
   background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, .1));
 }
 
-#thumbview-videos-btn .thumbview-vd-icon {
+#yttools-videos-btn .yttools-vd-icon {
   display: inline-flex;
   width: 24px;
   height: 24px;
 }
 
-#thumbview-videos-btn .thumbview-vd-icon svg {
+#yttools-videos-btn .yttools-vd-icon svg {
   width: 24px;
   height: 24px;
   display: block;
@@ -44,26 +44,26 @@
 
 /* Le libellé n'apparaît qu'au retour (succès / échec) : le bouton s'élargit en
    pilule, puis redevient rond. */
-#thumbview-videos-btn .thumbview-vd-label {
+#yttools-videos-btn .yttools-vd-label {
   display: none;
 }
 
-#thumbview-videos-btn[data-state="ok"],
-#thumbview-videos-btn[data-state="ko"] {
+#yttools-videos-btn[data-state="ok"],
+#yttools-videos-btn[data-state="ko"] {
   width: auto;
   padding: 0 14px 0 10px;
 }
 
-#thumbview-videos-btn[data-state="ok"] .thumbview-vd-label,
-#thumbview-videos-btn[data-state="ko"] .thumbview-vd-label {
+#yttools-videos-btn[data-state="ok"] .yttools-vd-label,
+#yttools-videos-btn[data-state="ko"] .yttools-vd-label {
   display: inline;
   white-space: nowrap;
 }
 
-#thumbview-videos-btn[data-state="ok"] {
+#yttools-videos-btn[data-state="ok"] {
   color: #2ba640;
 }
 
-#thumbview-videos-btn[data-state="ko"] {
+#yttools-videos-btn[data-state="ko"] {
   color: #f03;
 }

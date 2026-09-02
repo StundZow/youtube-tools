@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * Thumbnail View — reglages partages et remise des donnees.
+ * YouTube Tools — reglages partages et remise des donnees.
  *
  * Charge avant les autres scripts de contenu, ce module leur expose
- * `window.__thumbview` : les reglages (avec suivi des changements en direct) et
+ * `window.__yttools` : les reglages (avec suivi des changements en direct) et
  * une fonction `deliver()` unique.
  *
  * Les deux boutons — transcription et export des videos — passent par cette
@@ -13,9 +13,10 @@
  */
 
 (() => {
-  if (window.__thumbview) return;
+  if (window.__yttools) return;
 
-  const KEY = 'thumbviewSettings';
+  const KEY = 'yttoolsSettings';
+  const OLD_KEY = 'thumbviewSettings';   // avant le renommage en YouTube Tools
   const DEFAULTS = {
     transcriptButton: true,   // afficher le bouton de transcription
     videosButton: true,       // afficher le bouton d'export des videos
@@ -38,9 +39,12 @@
   };
 
   try {
-    settings.ready = chrome.storage.local.get(KEY)
+    settings.ready = chrome.storage.local.get([KEY, OLD_KEY])
       .then((stored) => {
-        current = { ...DEFAULTS, ...(stored && stored[KEY] ? stored[KEY] : {}) };
+        // Le popup migre l'ancienne cle ; tant qu'il n'a pas ete ouvert, on la
+        // lit quand meme pour ne pas revenir aux valeurs par defaut.
+        const brut = (stored && (stored[KEY] || stored[OLD_KEY])) || {};
+        current = { ...DEFAULTS, ...brut };
         return current;
       })
       .catch(() => current);
@@ -124,5 +128,5 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  window.__thumbview = { settings, deliver, copyText, downloadText, slug, stamp };
+  window.__yttools = { settings, deliver, copyText, downloadText, slug, stamp };
 })();

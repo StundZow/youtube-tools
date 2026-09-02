@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="icon.png" width="96" alt="Icône Thumbnail View">
+<img src="icon.png" width="96" alt="Icône YouTube Tools">
 
-# Thumbnail View
+# YouTube Tools
 
-Juge ta **miniature** et ton **titre** au milieu des vraies vidéos YouTube, copie la **transcription** de n'importe quelle vidéo, et exporte les **vidéos d'une page** — le tout en CSV.
+Boîte à outils YouTube : juge ta **miniature** au milieu des vraies vidéos, copie la **transcription** de n'importe quelle vidéo, et exporte les **vidéos d'une page** — le tout en CSV.
 
 Extension **Chrome · Edge · Brave · Opera** · [Installation](#prise-en-main)
 
@@ -18,9 +18,13 @@ Extension **Chrome · Edge · Brave · Opera** · [Installation](#prise-en-main)
 
 ## Ce que ça fait
 
+Trois outils qui répondent au même besoin : sortir de YouTube des informations que l'interface montre mais ne laisse pas récupérer.
+
+### Voir sa miniature comme le public la verra
+
 Une miniature ne se juge pas dans un éditeur d'image : elle se juge à 320 px de large, coincée entre deux vidéos concurrentes, dans un feed qu'on parcourt au pouce.
 
-Thumbnail View injecte ta fausse carte — miniature, titre, chaîne, avatar, durée — **directement dans le vrai feed YouTube**, au milieu des vraies vidéos, à la taille réelle et dans le vrai thème. Tu vois ce que verra ton audience, pas une maquette.
+L'extension injecte ta fausse carte — miniature, titre, chaîne, avatar, durée — **directement dans le vrai feed YouTube**, au milieu des vraies vidéos, à la taille réelle et dans le vrai thème. Tu vois ce que verra ton audience, pas une maquette.
 
 Et parce qu'on finit toujours par vouloir donner une vidéo à mâcher à une IA, un second bouton copie la **transcription complète au format CSV**, timecodes compris.
 
@@ -44,7 +48,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 
 1. Télécharge ce dépôt (**Code → Download ZIP**) et décompresse-le.
 2. Ouvre `chrome://extensions` et active le **Mode développeur** en haut à droite.
-3. **Charger l'extension non empaquetée** → sélectionne le dossier `thumbnail-view`.
+3. **Charger l'extension non empaquetée** → sélectionne le dossier `youtube-tools`.
 4. Épingle l'extension dans la barre d'outils.
 
 *(Sur Edge, Brave ou Opera : `edge://extensions`, `brave://extensions`, etc. — la marche à suivre est identique.)*
@@ -72,7 +76,7 @@ start,end,text
 - `end` correspond au début du segment suivant
 - champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien
 
-Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidéo n'a pas de transcription. En cas d'échec, un diagnostic part dans la console (`[Thumbnail View] transcription introuvable`).
+Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidéo n'a pas de transcription. En cas d'échec, un diagnostic part dans la console (`[YouTube Tools] transcription introuvable`).
 
 ## Exporter les vidéos d'une page (CSV)
 
@@ -143,7 +147,7 @@ Points à connaître, tous mis au jour en faisant tourner l'extracteur sur une v
 ## Structure
 
 ```
-thumbnail-view/
+youtube-tools/
 ├── manifest.json    MV3, permissions : storage, scripting, activeTab,
 │                    clipboardWrite + youtube.com
 ├── popup.html/css/js   interface (thème clair/sombre, drag & drop, coller)

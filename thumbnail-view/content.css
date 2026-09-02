@@ -1,7 +1,7 @@
-/* Thumbnail View — retouches minimales sur la carte injectée. */
+/* YouTube Tools — retouches minimales sur la carte injectée. */
 
-[data-thumbview] img.thumbview-thumb,
-[data-thumbview] canvas.thumbview-canvas {
+[data-yttools] img.yttools-thumb,
+[data-yttools] canvas.yttools-canvas {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -9,17 +9,17 @@
   background: #000;
 }
 
-[data-thumbview] img.thumbview-avatar {
+[data-yttools] img.yttools-avatar {
   object-fit: cover;
 }
 
 /* Rien ne doit rejouer une preview vidéo ni afficher une progression. */
-[data-thumbview] #mouseover-overlay,
-[data-thumbview] ytd-video-preview,
-[data-thumbview] ytd-thumbnail-overlay-resume-playback-renderer {
+[data-yttools] #mouseover-overlay,
+[data-yttools] ytd-video-preview,
+[data-yttools] ytd-thumbnail-overlay-resume-playback-renderer {
   display: none !important;
 }
 
-[data-thumbview] a {
+[data-yttools] a {
   cursor: default;
 }

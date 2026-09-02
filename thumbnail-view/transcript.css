@@ -1,6 +1,6 @@
-/* Thumbnail View — bouton « copier la transcription », posé à côté du bouton J'aime. */
+/* YouTube Tools — bouton « copier la transcription », posé à côté du bouton J'aime. */
 
-#thumbview-transcript-btn {
+#yttools-transcript-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -26,21 +26,21 @@
   transition: background .12s ease, opacity .12s ease;
 }
 
-#thumbview-transcript-btn:hover {
+#yttools-transcript-btn:hover {
   background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, .1));
 }
 
-#thumbview-transcript-btn:disabled {
+#yttools-transcript-btn:disabled {
   cursor: default;
 }
 
-#thumbview-transcript-btn .thumbview-tr-icon {
+#yttools-transcript-btn .yttools-tr-icon {
   display: inline-flex;
   width: 24px;
   height: 24px;
 }
 
-#thumbview-transcript-btn .thumbview-tr-icon svg {
+#yttools-transcript-btn .yttools-tr-icon svg {
   width: 24px;
   height: 24px;
   display: block;
@@ -48,35 +48,35 @@
 
 /* Le libellé n'apparaît qu'au moment du retour (succès / échec) : le bouton
    s'élargit alors en pilule, puis redevient rond. */
-#thumbview-transcript-btn .thumbview-tr-label {
+#yttools-transcript-btn .yttools-tr-label {
   display: none;
 }
 
-#thumbview-transcript-btn[data-state="ok"],
-#thumbview-transcript-btn[data-state="ko"] {
+#yttools-transcript-btn[data-state="ok"],
+#yttools-transcript-btn[data-state="ko"] {
   width: auto;
   padding: 0 14px 0 10px;
 }
 
-#thumbview-transcript-btn[data-state="ok"] .thumbview-tr-label,
-#thumbview-transcript-btn[data-state="ko"] .thumbview-tr-label {
+#yttools-transcript-btn[data-state="ok"] .yttools-tr-label,
+#yttools-transcript-btn[data-state="ko"] .yttools-tr-label {
   display: inline;
   white-space: nowrap;
 }
 
-#thumbview-transcript-btn[data-state="ok"] {
+#yttools-transcript-btn[data-state="ok"] {
   color: #2ba640;
 }
 
-#thumbview-transcript-btn[data-state="ko"] {
+#yttools-transcript-btn[data-state="ko"] {
   color: #f03;
 }
 
-#thumbview-transcript-btn[data-state="loading"] .thumbview-tr-icon {
-  animation: thumbview-tr-pulse 1s ease-in-out infinite;
+#yttools-transcript-btn[data-state="loading"] .yttools-tr-icon {
+  animation: yttools-tr-pulse 1s ease-in-out infinite;
 }
 
-@keyframes thumbview-tr-pulse {
+@keyframes yttools-tr-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: .35; }
 }

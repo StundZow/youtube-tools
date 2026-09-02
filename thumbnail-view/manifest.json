@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Thumbnail View — Aperçu de miniature YouTube",
-  "version": "2.4.1",
-  "description": "Visualise ta miniature et ton titre directement dans le feed YouTube, au milieu des vraies vidéos.",
+  "name": "YouTube Tools",
+  "version": "3.0.0",
+  "description": "Boîte à outils YouTube : aperçu de miniature dans le vrai feed, copie de transcription et export CSV des vidéos d'une page.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -11,7 +11,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Thumbnail View",
+    "default_title": "YouTube Tools",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

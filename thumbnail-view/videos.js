@@ -1,11 +1,12 @@
 'use strict';
 
 /**
- * Thumbnail View — export CSV des videos chargees sur la page.
+ * YouTube Tools — export CSV des videos chargees sur la page.
  *
- * Un bouton « enregistrer » est ajoute a cote de « A propos de ces resultats »
- * (page de recherche) ou, a defaut, dans la barre du haut. Au clic, il ramasse
- * toutes les cartes video *presentes dans le DOM* et les ecrit en CSV.
+ * Un bouton « enregistrer » est ajoute dans la barre du haut, a gauche de
+ * « Creer ». Cette barre etant fixe et presente sur toutes les pages YouTube, le
+ * bouton reste accessible partout et ne disparait pas au defilement. Au clic, il
+ * ramasse toutes les cartes video *presentes dans le DOM* et les ecrit en CSV.
  *
  * Il n'y a donc rien a precharger : ce qui est ramasse est exactement ce que la
  * page a deja charge. Trois videos affichees -> trois lignes ; on deroule
@@ -19,14 +20,14 @@
  */
 
 (() => {
-  if (window.__thumbviewVideosLoaded) return;
-  window.__thumbviewVideosLoaded = true;
+  if (window.__yttoolsVideosLoaded) return;
+  window.__yttoolsVideosLoaded = true;
 
-  const BTN_ID = 'thumbview-videos-btn';
+  const BTN_ID = 'yttools-videos-btn';
 
   // Fourni par common.js, charge avant ce script. Le repli evite qu'un ordre de
   // chargement inattendu casse la page.
-  const TV = window.__thumbview || {
+  const TV = window.__yttools || {
     settings: { get: () => ({ videosButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
     deliver: async () => ({ ok: false, mode: 'clipboard' }),
     slug: (v, f) => f,
@@ -54,7 +55,7 @@
   function findCards() {
     const all = [...document.querySelectorAll(CARD_TAGS)].filter((n) => {
       // Jamais la fausse carte posee par l'apercu de miniature.
-      if (n.hasAttribute('data-thumbview') || n.closest('[data-thumbview]')) return false;
+      if (n.hasAttribute('data-yttools') || n.closest('[data-yttools]')) return false;
       return !!n.querySelector('a[href]');
     });
     const set = new Set(all);
@@ -78,7 +79,7 @@
     /\d[\d\s\u00a0\u202f.,]*\s*(?:mrd|md|k|m|b)?\s*(?:de\s+)?(?:vues?|views?|visualizzazioni|aufrufe)/i;
   const DATE_RE = /il y a |\bago\b|hier|aujourd|diffus|streamed|premiere|en direct|\blive\b/i;
   // Les cartes compactes ecrivent les vues sans le mot : « 1 M », « 272 k ».
-  const BARE_COUNT_RE = /^\d[\d\s  .,]*\s*(?:mrd|md|k|m|b)?$/i;
+  const BARE_COUNT_RE = /^\d[\d\s.,]*\s*(?:mrd|md|k|m|b)?$/i;
 
   /**
    * YouTube agrege parfois plusieurs informations dans un seul fragment
@@ -311,9 +312,9 @@
   function setState(btn, state, label) {
     clearTimeout(resetTimer);
     btn.dataset.state = state;
-    btn.querySelector('.thumbview-vd-icon').innerHTML =
+    btn.querySelector('.yttools-vd-icon').innerHTML =
       state === 'ok' ? ICON_OK : state === 'ko' ? ICON_KO : ICON_SAVE;
-    btn.querySelector('.thumbview-vd-label').textContent = label || '';
+    btn.querySelector('.yttools-vd-label').textContent = label || '';
     if (state === 'ok' || state === 'ko') {
       resetTimer = setTimeout(() => setState(btn, 'idle', ''), 2600);
     }
@@ -331,11 +332,11 @@
     try {
       rows = collect();
     } catch (e) {
-      console.warn('[Thumbnail View] export videos', e);
+      console.warn('[YouTube Tools] export videos', e);
     }
 
     if (!rows.length) {
-      console.warn('[Thumbnail View] aucune video trouvee', {
+      console.warn('[YouTube Tools] aucune video trouvee', {
         url: location.href,
         cartesDetectees: findCards().length
       });
@@ -351,14 +352,14 @@
   function build() {
     const btn = document.createElement('button');
     btn.id = BTN_ID;
-    btn.className = 'thumbview-vd-btn';
+    btn.className = 'yttools-vd-btn';
     btn.type = 'button';
     btn.dataset.state = 'idle';
     btn.title = hint();
     btn.setAttribute('aria-label', hint());
     btn.innerHTML =
-      '<span class="thumbview-vd-icon">' + ICON_SAVE + '</span>' +
-      '<span class="thumbview-vd-label"></span>';
+      '<span class="yttools-vd-icon">' + ICON_SAVE + '</span>' +
+      '<span class="yttools-vd-label"></span>';
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();

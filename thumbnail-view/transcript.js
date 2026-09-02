@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Thumbnail View — copie de la transcription YouTube au format CSV.
+ * YouTube Tools — copie de la transcription YouTube au format CSV.
  *
  * Un petit bouton « texte » est ajoute a cote du bouton J'aime. Au clic :
  *  1. on ouvre le panneau de transcription comme le ferait un humain
@@ -17,20 +17,20 @@
  */
 
 (() => {
-  if (window.__thumbviewTranscriptLoaded) return;
-  window.__thumbviewTranscriptLoaded = true;
+  if (window.__yttoolsTranscriptLoaded) return;
+  window.__yttoolsTranscriptLoaded = true;
 
-  const BTN_ID = 'thumbview-transcript-btn';
+  const BTN_ID = 'yttools-transcript-btn';
 
   // Fourni par common.js, charge avant ce script. Le repli evite qu'un ordre de
   // chargement inattendu casse la page.
-  const TV = window.__thumbview || {
+  const TV = window.__yttools || {
     settings: { get: () => ({ transcriptButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
     deliver: async () => ({ ok: false, mode: 'clipboard' }),
     slug: (v, f) => f,
     stamp: () => ''
   };
-  const MARK = 'data-thumbview-ts';
+  const MARK = 'data-yttools-ts';
   const TS_RE = /^\d{1,3}(?::[0-5]\d){1,2}$/;
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -381,9 +381,9 @@
     clearTimeout(resetTimer);
     btn.dataset.state = state;
     btn.disabled = state === 'loading';
-    btn.querySelector('.thumbview-tr-icon').innerHTML =
+    btn.querySelector('.yttools-tr-icon').innerHTML =
       state === 'ok' ? ICON_OK : state === 'ko' ? ICON_KO : ICON_TEXT;
-    btn.querySelector('.thumbview-tr-label').textContent = label || '';
+    btn.querySelector('.yttools-tr-label').textContent = label || '';
     if (state === 'ok' || state === 'ko') {
       resetTimer = setTimeout(() => setState(btn, 'idle', ''), 2400);
     }
@@ -408,13 +408,13 @@
     setState(btn, 'loading', '');
 
     let rows = null;
-    try { rows = await fromPanel(); } catch (e) { console.warn('[Thumbnail View] panneau', e); }
+    try { rows = await fromPanel(); } catch (e) { console.warn('[YouTube Tools] panneau', e); }
     if (!rows) {
-      try { rows = await fromApi(); } catch (e) { console.warn('[Thumbnail View] api', e); }
+      try { rows = await fromApi(); } catch (e) { console.warn('[YouTube Tools] api', e); }
     }
 
     if (!rows || !rows.length) {
-      console.warn('[Thumbnail View] transcription introuvable', diagnose());
+      console.warn('[YouTube Tools] transcription introuvable', diagnose());
       setState(btn, 'ko', 'Introuvable');
       return;
     }
@@ -434,14 +434,14 @@
   function build() {
     const btn = document.createElement('button');
     btn.id = BTN_ID;
-    btn.className = 'thumbview-tr-btn';
+    btn.className = 'yttools-tr-btn';
     btn.type = 'button';
     btn.dataset.state = 'idle';
     btn.title = hint();
     btn.setAttribute('aria-label', hint());
     btn.innerHTML =
-      '<span class="thumbview-tr-icon">' + ICON_TEXT + '</span>' +
-      '<span class="thumbview-tr-label"></span>';
+      '<span class="yttools-tr-icon">' + ICON_TEXT + '</span>' +
+      '<span class="yttools-tr-label"></span>';
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();

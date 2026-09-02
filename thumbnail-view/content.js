@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Thumbnail View — injection de l'apercu dans le feed YouTube.
+ * YouTube Tools — injection de l'apercu dans le feed YouTube.
  *
  * Principe : plutot que d'injecter du HTML fige (qui casse a chaque refonte de
  * YouTube), on clone une vraie carte video deja presente sur la page et on
@@ -10,10 +10,10 @@
  */
 
 (() => {
-  if (window.__thumbviewLoaded) return;
-  window.__thumbviewLoaded = true;
+  if (window.__yttoolsLoaded) return;
+  window.__yttoolsLoaded = true;
 
-  const MARK = 'data-thumbview';
+  const MARK = 'data-yttools';
   const MAX_RANDOM = 12;
 
   // L'apercu est volontairement ephemere : il n'existe qu'apres un clic sur le
@@ -114,15 +114,15 @@
       canvas.width = bmp.width;
       canvas.height = bmp.height;
       canvas.getContext('2d').drawImage(bmp, 0, 0);
-      canvas.className = img.className + ' thumbview-canvas';
+      canvas.className = img.className + ' yttools-canvas';
       canvas.setAttribute('style', img.getAttribute('style') || '');
       img.replaceWith(canvas);
     } catch { /* on garde la miniature d'origine */ }
   }
 
   function paint(img, dataUrl, cls) {
-    if (img.dataset.thumbviewSrc === dataUrl) return;
-    img.dataset.thumbviewSrc = dataUrl;
+    if (img.dataset.yttoolsSrc === dataUrl) return;
+    img.dataset.yttoolsSrc = dataUrl;
     img.classList.add(cls);
     img.removeAttribute('srcset');
     img.removeAttribute('data-src');
@@ -288,9 +288,9 @@
     const imgs = [...clone.querySelectorAll('img')];
     imgs.forEach((img, i) => {
       if (avatars.has(i)) {
-        if (data.avatar) paint(img, data.avatar, 'thumbview-avatar');
+        if (data.avatar) paint(img, data.avatar, 'yttools-avatar');
       } else if (data.thumb) {
-        paint(img, data.thumb, 'thumbview-thumb');
+        paint(img, data.thumb, 'yttools-thumb');
       }
     });
 
@@ -348,7 +348,7 @@
 
     const clone = model.cloneNode(true);
     clone.setAttribute(MARK, '');
-    clone.classList.add('thumbview-item');
+    clone.classList.add('yttools-item');
     clone.removeAttribute('id');
 
     neutralize(clone);
@@ -418,7 +418,7 @@
   });
 
   chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
-    if (msg.type === 'THUMBVIEW_APPLY') {
+    if (msg.type === 'YTTOOLS_APPLY') {
       remove();
       data = msg.data;
       active = true;
@@ -430,12 +430,12 @@
       respond({ ok });
       return true;
     }
-    if (msg.type === 'THUMBVIEW_REMOVE') {
+    if (msg.type === 'YTTOOLS_REMOVE') {
       deactivate();
       respond({ ok: true });
       return true;
     }
-    if (msg.type === 'THUMBVIEW_PING') {
+    if (msg.type === 'YTTOOLS_PING') {
       respond({ ok: true, injected: !!document.querySelector('[' + MARK + ']') });
       return true;
     }

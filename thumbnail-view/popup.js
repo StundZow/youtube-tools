@@ -1,11 +1,14 @@
 'use strict';
 
-const KEY = 'thumbview';
-const OLD_KEY = 'prevyou';                  // avant le renommage en Thumbnail View
+const KEY = 'yttools';
+// Noms portes par l'extension avant « YouTube Tools », du plus recent au plus
+// ancien : on relit ces cles pour ne pas perdre les champs deja saisis.
+const OLD_KEYS = ['thumbview', 'prevyou'];
 
 // Reglages des boutons injectes dans YouTube. Cle separee des champs d'apercu :
 // les scripts de contenu ne lisent que celle-ci, et l'aperçu reste ponctuel.
-const SETTINGS_KEY = 'thumbviewSettings';
+const SETTINGS_KEY = 'yttoolsSettings';
+const OLD_SETTINGS_KEYS = ['thumbviewSettings'];
 const SETTINGS_DEFAULTS = {
   transcriptButton: true,
   videosButton: true,
@@ -41,18 +44,36 @@ let live = false;
 
 /* ------------------------------------------------------------------ state */
 
+/** La premiere cle presente dans le stockage, en partant de la plus recente. */
+function reprise(stored, keys) {
+  for (const k of keys) if (stored[k]) return { valeur: stored[k], cle: k };
+  return { valeur: null, cle: null };
+}
+
 async function load() {
-  const stored = await chrome.storage.local.get([KEY, OLD_KEY, SETTINGS_KEY]);
-  // Renommer l'extension ne doit pas faire perdre les champs deja saisis : on
-  // reprend ceux de l'ancienne cle, puis on la supprime.
-  const saved = stored[KEY] || stored[OLD_KEY] || {};
-  state = { ...DEFAULTS, ...saved };
+  const toutes = [KEY, ...OLD_KEYS, SETTINGS_KEY, ...OLD_SETTINGS_KEYS];
+  const stored = await chrome.storage.local.get(toutes);
+
+  // Renommer l'extension ne doit pas faire perdre ce qui a deja ete saisi : on
+  // reprend la plus recente des anciennes cles, puis on la supprime.
+  const champs = reprise(stored, [KEY, ...OLD_KEYS]);
+  state = { ...DEFAULTS, ...(champs.valeur || {}) };
   delete state.enabled;                       // résidu des anciennes versions
-  settings = { ...SETTINGS_DEFAULTS, ...(stored[SETTINGS_KEY] || {}) };
-  if (!stored[KEY] && stored[OLD_KEY]) {
+
+  const regl = reprise(stored, [SETTINGS_KEY, ...OLD_SETTINGS_KEYS]);
+  settings = { ...SETTINGS_DEFAULTS, ...(regl.valeur || {}) };
+
+  const perimees = [];
+  if (champs.cle && champs.cle !== KEY) {
     await chrome.storage.local.set({ [KEY]: state });
-    await chrome.storage.local.remove(OLD_KEY);
+    perimees.push(champs.cle);
   }
+  if (regl.cle && regl.cle !== SETTINGS_KEY) {
+    await chrome.storage.local.set({ [SETTINGS_KEY]: settings });
+    perimees.push(regl.cle);
+  }
+  if (perimees.length) await chrome.storage.local.remove(perimees);
+
   render();
   live = await ping();
   render();
@@ -70,7 +91,7 @@ async function ping() {
   const tab = await youtubeTab();
   if (!tab) return false;
   try {
-    const res = await chrome.tabs.sendMessage(tab.id, { type: 'THUMBVIEW_PING' });
+    const res = await chrome.tabs.sendMessage(tab.id, { type: 'YTTOOLS_PING' });
     return !!(res && res.injected);
   } catch {
     return false;                             // content script pas encore chargé
@@ -230,7 +251,7 @@ async function apply() {
   }
 
   try {
-    const res = await send(tab.id, { type: 'THUMBVIEW_APPLY', data: state });
+    const res = await send(tab.id, { type: 'YTTOOLS_APPLY', data: state });
     await chrome.tabs.update(tab.id, { active: true });
     await chrome.windows.update(tab.windowId, { focused: true }).catch(() => {});
     if (res && res.ok) {
@@ -249,7 +270,7 @@ async function removePreview() {
   render();
   const tab = await youtubeTab();
   if (tab) {
-    try { await chrome.tabs.sendMessage(tab.id, { type: 'THUMBVIEW_REMOVE' }); } catch { /* rien a retirer */ }
+    try { await chrome.tabs.sendMessage(tab.id, { type: 'YTTOOLS_REMOVE' }); } catch { /* rien a retirer */ }
   }
   status('Aperçu retiré', 'ok');
 }
@@ -272,7 +293,7 @@ el.reset.addEventListener('click', async () => {
   render();
   const tab = await youtubeTab();
   if (tab) {
-    try { await chrome.tabs.sendMessage(tab.id, { type: 'THUMBVIEW_REMOVE' }); } catch { /* noop */ }
+    try { await chrome.tabs.sendMessage(tab.id, { type: 'YTTOOLS_REMOVE' }); } catch { /* noop */ }
   }
   status('Réinitialisé', 'ok');
 });
