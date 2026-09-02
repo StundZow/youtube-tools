@@ -1,0 +1,25 @@
+/* Thumbnail View — retouches minimales sur la carte injectée. */
+
+[data-thumbview] img.thumbview-thumb,
+[data-thumbview] canvas.thumbview-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+[data-thumbview] img.thumbview-avatar {
+  object-fit: cover;
+}
+
+/* Rien ne doit rejouer une preview vidéo ni afficher une progression. */
+[data-thumbview] #mouseover-overlay,
+[data-thumbview] ytd-video-preview,
+[data-thumbview] ytd-thumbnail-overlay-resume-playback-renderer {
+  display: none !important;
+}
+
+[data-thumbview] a {
+  cursor: default;
+}

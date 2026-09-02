@@ -1,6 +1,7 @@
 'use strict';
 
-const KEY = 'prevyou';
+const KEY = 'thumbview';
+const OLD_KEY = 'prevyou';                  // avant le renommage en Thumbnail View
 const DEFAULTS = {
   channel: '',
   title: '',
@@ -30,9 +31,16 @@ let live = false;
 /* ------------------------------------------------------------------ state */
 
 async function load() {
-  const stored = await chrome.storage.local.get(KEY);
-  state = { ...DEFAULTS, ...(stored[KEY] || {}) };
+  const stored = await chrome.storage.local.get([KEY, OLD_KEY]);
+  // Renommer l'extension ne doit pas faire perdre les champs deja saisis : on
+  // reprend ceux de l'ancienne cle, puis on la supprime.
+  const saved = stored[KEY] || stored[OLD_KEY] || {};
+  state = { ...DEFAULTS, ...saved };
   delete state.enabled;                       // résidu des anciennes versions
+  if (!stored[KEY] && stored[OLD_KEY]) {
+    await chrome.storage.local.set({ [KEY]: state });
+    await chrome.storage.local.remove(OLD_KEY);
+  }
   render();
   live = await ping();
   render();
@@ -43,7 +51,7 @@ async function ping() {
   const tab = await youtubeTab();
   if (!tab) return false;
   try {
-    const res = await chrome.tabs.sendMessage(tab.id, { type: 'PREVYOU_PING' });
+    const res = await chrome.tabs.sendMessage(tab.id, { type: 'THUMBVIEW_PING' });
     return !!(res && res.injected);
   } catch {
     return false;                             // content script pas encore chargé
@@ -199,7 +207,7 @@ async function apply() {
   }
 
   try {
-    const res = await send(tab.id, { type: 'PREVYOU_APPLY', data: state });
+    const res = await send(tab.id, { type: 'THUMBVIEW_APPLY', data: state });
     await chrome.tabs.update(tab.id, { active: true });
     await chrome.windows.update(tab.windowId, { focused: true }).catch(() => {});
     if (res && res.ok) {
@@ -218,7 +226,7 @@ async function removePreview() {
   render();
   const tab = await youtubeTab();
   if (tab) {
-    try { await chrome.tabs.sendMessage(tab.id, { type: 'PREVYOU_REMOVE' }); } catch { /* rien a retirer */ }
+    try { await chrome.tabs.sendMessage(tab.id, { type: 'THUMBVIEW_REMOVE' }); } catch { /* rien a retirer */ }
   }
   status('Aperçu retiré', 'ok');
 }
@@ -241,7 +249,7 @@ el.reset.addEventListener('click', async () => {
   render();
   const tab = await youtubeTab();
   if (tab) {
-    try { await chrome.tabs.sendMessage(tab.id, { type: 'PREVYOU_REMOVE' }); } catch { /* noop */ }
+    try { await chrome.tabs.sendMessage(tab.id, { type: 'THUMBVIEW_REMOVE' }); } catch { /* noop */ }
   }
   status('Réinitialisé', 'ok');
 });

@@ -4,7 +4,7 @@
 
 # Thumbnail View
 
-Juge ta **miniature** et ton **titre** au milieu des vraies vidéos YouTube, et copie la **transcription** de n'importe quelle vidéo en CSV.
+Juge ta **miniature** et ton **titre** au milieu des vraies vidéos YouTube, copie la **transcription** de n'importe quelle vidéo, et exporte les **vidéos d'une page** — le tout en CSV.
 
 Extension **Chrome · Edge · Brave · Opera** · [Installation](#prise-en-main)
 
@@ -33,6 +33,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 🖼️ **Injection dans le vrai feed** — accueil, abonnements, résultats de recherche, page de chaîne, colonne de suggestions du lecteur
 - 🎲 **Position aléatoire** — place ta carte quelque part dans la grille plutôt qu'en première position, là où la comparaison est honnête
 - 📝 **Copie de la transcription en CSV** — un bouton à côté du J'aime, timecodes de début et de fin inclus
+- 💾 **Export CSV des vidéos d'une page** — titre, chaîne, vues, date, durée, multiplicateur vidIQ, en un clic
 - 🧬 **Clonage d'une vraie carte** plutôt que du HTML figé — le style et la grille sont toujours ceux du layout courant de YouTube
 - 🌗 **Thème clair / sombre** dans le popup
 - 📋 **Glisser-déposer ou coller** la miniature et l'avatar, avec les champs mémorisés d'une fois sur l'autre
@@ -42,7 +43,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 
 1. Télécharge ce dépôt (**Code → Download ZIP**) et décompresse-le.
 2. Ouvre `chrome://extensions` et active le **Mode développeur** en haut à droite.
-3. **Charger l'extension non empaquetée** → sélectionne le dossier `prevyou`.
+3. **Charger l'extension non empaquetée** → sélectionne le dossier `thumbnail-view`.
 4. Épingle l'extension dans la barre d'outils.
 
 *(Sur Edge, Brave ou Opera : `edge://extensions`, `brave://extensions`, etc. — la marche à suivre est identique.)*
@@ -70,7 +71,24 @@ start,end,text
 - `end` correspond au début du segment suivant
 - champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien
 
-Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidéo n'a pas de transcription. En cas d'échec, un diagnostic part dans la console (`[PrevYou] transcription introuvable`).
+Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidéo n'a pas de transcription. En cas d'échec, un diagnostic part dans la console (`[Thumbnail View] transcription introuvable`).
+
+## Exporter les vidéos d'une page (CSV)
+
+Un bouton **⤓** est ajouté en haut de la page de résultats, à côté de « À propos de ces résultats » (et dans la barre du haut sur les autres pages). Il enregistre un fichier CSV de toutes les vidéos **actuellement chargées** :
+
+```csv
+position,titre,chaine,vues,vues_num,date,duree,multiplicateur,type,url
+"1","KEYBOARD ESCAPE MAIS TU PEUX GLISSER !!","Kevko Gaming","149 k vues","149000","il y a 16 heures","18:48","1.4x","video","https://www.youtube.com/watch?v=TnTr_PEicOI"
+```
+
+- `position` : l'ordre d'apparition sur la page — de quoi analyser un classement de recherche
+- `vues` garde le texte affiché, `vues_num` le convertit en nombre (`1,2 M de vues` → `1200000`) pour trier et calculer
+- `multiplicateur` reprend le `1.4x` de **vidIQ** quand l'extension est installée, sinon la colonne reste vide
+- `type` vaut `video`, `short` ou `playlist` — un Short n'a ni chaîne ni durée affichées, une playlist n'a pas de vues
+- le fichier commence par un BOM UTF-8, pour qu'Excel n'écrase pas les accents
+
+**Rien n'est préchargé** : l'export prend exactement ce que la page a déjà chargé. Trois vidéos affichées donnent trois lignes ; on déroule longuement puis on clique, et tout y est.
 
 ## Pourquoi l'ancienne version ne marchait plus
 
@@ -93,10 +111,20 @@ Sécurités complémentaires :
 
 Deux garde-fous notables : les panneaux de chapitres et de commentaires contiennent eux aussi des timecodes et sont explicitement écartés ; et le repli API vérifie que l'identifiant de vidéo encodé dans les paramètres est bien celui de la page courante — sans quoi une navigation interne ferait copier la transcription de la vidéo précédente.
 
+**L'export des vidéos suit la même logique** : chaque champ est reconnu par ce qu'il *dit*, pas par son nom de classe. Un fragment « 379 k vues » est lu comme des vues, « il y a 1 mois » comme une date, « 1.4x » comme un multiplicateur. C'est ce qui permet de récupérer le multiplicateur de vidIQ, dont les classes CSS sont hachées et changent à chaque version.
+
+Points à connaître, tous mis au jour en faisant tourner l'extracteur sur une vraie page de résultats :
+
+- au-delà du million, le français intercale un « de » (**1,2 M de vues**), et les cartes compactes affichent le compte **sans le mot « vues »** (« 1 M ») ;
+- les cartes s'emboîtent (`ytd-rich-item-renderer` contient un `yt-lockup-view-model`) : sans déduplication, chaque vidéo compterait double ;
+- le sous-titre d'un Short agrège plusieurs informations (« 11 k vues · 6 hours ago ») et doit être découpé avant d'être classé ;
+- le premier badge d'un Short est « Nouveau », pas une durée ;
+- la fausse carte de l'aperçu de miniature est explicitement exclue de l'export.
+
 ## Structure
 
 ```
-prevyou/
+thumbnail-view/
 ├── manifest.json    MV3, permissions : storage, scripting, activeTab,
 │                    clipboardWrite + youtube.com
 ├── popup.html/css/js   interface (thème clair/sombre, drag & drop, coller)
@@ -104,6 +132,8 @@ prevyou/
 ├── content.css      ajustements sur la carte injectée
 ├── transcript.js    bouton « copier la transcription » + export CSV
 ├── transcript.css   style du bouton, aligné sur celui de YouTube
+├── videos.js        bouton « enregistrer » + export CSV des vidéos de la page
+├── videos.css       style du bouton
 └── icons/           16 / 32 / 48 / 128 px
 ```
 

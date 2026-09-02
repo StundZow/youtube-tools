@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * PrevYou — copie de la transcription YouTube au format CSV.
+ * Thumbnail View — copie de la transcription YouTube au format CSV.
  *
  * Un petit bouton « texte » est ajoute a cote du bouton J'aime. Au clic :
  *  1. on ouvre le panneau de transcription comme le ferait un humain
@@ -17,11 +17,11 @@
  */
 
 (() => {
-  if (window.__prevyouTranscriptLoaded) return;
-  window.__prevyouTranscriptLoaded = true;
+  if (window.__thumbviewTranscriptLoaded) return;
+  window.__thumbviewTranscriptLoaded = true;
 
-  const BTN_ID = 'prevyou-transcript-btn';
-  const MARK = 'data-prevyou-ts';
+  const BTN_ID = 'thumbview-transcript-btn';
+  const MARK = 'data-thumbview-ts';
   const TS_RE = /^\d{1,3}(?::[0-5]\d){1,2}$/;
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -384,9 +384,9 @@
     clearTimeout(resetTimer);
     btn.dataset.state = state;
     btn.disabled = state === 'loading';
-    btn.querySelector('.prevyou-tr-icon').innerHTML =
+    btn.querySelector('.thumbview-tr-icon').innerHTML =
       state === 'ok' ? ICON_OK : state === 'ko' ? ICON_KO : ICON_TEXT;
-    btn.querySelector('.prevyou-tr-label').textContent = label || '';
+    btn.querySelector('.thumbview-tr-label').textContent = label || '';
     if (state === 'ok' || state === 'ko') {
       resetTimer = setTimeout(() => setState(btn, 'idle', ''), 2400);
     }
@@ -411,13 +411,13 @@
     setState(btn, 'loading', '');
 
     let rows = null;
-    try { rows = await fromPanel(); } catch (e) { console.warn('[PrevYou] panneau', e); }
+    try { rows = await fromPanel(); } catch (e) { console.warn('[Thumbnail View] panneau', e); }
     if (!rows) {
-      try { rows = await fromApi(); } catch (e) { console.warn('[PrevYou] api', e); }
+      try { rows = await fromApi(); } catch (e) { console.warn('[Thumbnail View] api', e); }
     }
 
     if (!rows || !rows.length) {
-      console.warn('[PrevYou] transcription introuvable', diagnose());
+      console.warn('[Thumbnail View] transcription introuvable', diagnose());
       setState(btn, 'ko', 'Introuvable');
       return;
     }
@@ -429,14 +429,14 @@
   function build() {
     const btn = document.createElement('button');
     btn.id = BTN_ID;
-    btn.className = 'prevyou-tr-btn';
+    btn.className = 'thumbview-tr-btn';
     btn.type = 'button';
     btn.dataset.state = 'idle';
     btn.title = 'Copier la transcription au format CSV';
     btn.setAttribute('aria-label', 'Copier la transcription au format CSV');
     btn.innerHTML =
-      '<span class="prevyou-tr-icon">' + ICON_TEXT + '</span>' +
-      '<span class="prevyou-tr-label"></span>';
+      '<span class="thumbview-tr-icon">' + ICON_TEXT + '</span>' +
+      '<span class="thumbview-tr-label"></span>';
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();

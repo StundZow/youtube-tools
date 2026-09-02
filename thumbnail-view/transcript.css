@@ -1,6 +1,6 @@
-/* PrevYou — bouton « copier la transcription », posé à côté du bouton J'aime. */
+/* Thumbnail View — bouton « copier la transcription », posé à côté du bouton J'aime. */
 
-#prevyou-transcript-btn {
+#thumbview-transcript-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -26,21 +26,21 @@
   transition: background .12s ease, opacity .12s ease;
 }
 
-#prevyou-transcript-btn:hover {
+#thumbview-transcript-btn:hover {
   background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, .1));
 }
 
-#prevyou-transcript-btn:disabled {
+#thumbview-transcript-btn:disabled {
   cursor: default;
 }
 
-#prevyou-transcript-btn .prevyou-tr-icon {
+#thumbview-transcript-btn .thumbview-tr-icon {
   display: inline-flex;
   width: 24px;
   height: 24px;
 }
 
-#prevyou-transcript-btn .prevyou-tr-icon svg {
+#thumbview-transcript-btn .thumbview-tr-icon svg {
   width: 24px;
   height: 24px;
   display: block;
@@ -48,35 +48,35 @@
 
 /* Le libellé n'apparaît qu'au moment du retour (succès / échec) : le bouton
    s'élargit alors en pilule, puis redevient rond. */
-#prevyou-transcript-btn .prevyou-tr-label {
+#thumbview-transcript-btn .thumbview-tr-label {
   display: none;
 }
 
-#prevyou-transcript-btn[data-state="ok"],
-#prevyou-transcript-btn[data-state="ko"] {
+#thumbview-transcript-btn[data-state="ok"],
+#thumbview-transcript-btn[data-state="ko"] {
   width: auto;
   padding: 0 14px 0 10px;
 }
 
-#prevyou-transcript-btn[data-state="ok"] .prevyou-tr-label,
-#prevyou-transcript-btn[data-state="ko"] .prevyou-tr-label {
+#thumbview-transcript-btn[data-state="ok"] .thumbview-tr-label,
+#thumbview-transcript-btn[data-state="ko"] .thumbview-tr-label {
   display: inline;
   white-space: nowrap;
 }
 
-#prevyou-transcript-btn[data-state="ok"] {
+#thumbview-transcript-btn[data-state="ok"] {
   color: #2ba640;
 }
 
-#prevyou-transcript-btn[data-state="ko"] {
+#thumbview-transcript-btn[data-state="ko"] {
   color: #f03;
 }
 
-#prevyou-transcript-btn[data-state="loading"] .prevyou-tr-icon {
-  animation: prevyou-tr-pulse 1s ease-in-out infinite;
+#thumbview-transcript-btn[data-state="loading"] .thumbview-tr-icon {
+  animation: thumbview-tr-pulse 1s ease-in-out infinite;
 }
 
-@keyframes prevyou-tr-pulse {
+@keyframes thumbview-tr-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: .35; }
 }
