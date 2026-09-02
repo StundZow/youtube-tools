@@ -470,17 +470,26 @@
     }
 
     const row = document.querySelector(
-      'ytd-watch-metadata #top-level-buttons-computed, #actions #top-level-buttons-computed, #top-level-buttons-computed'
+      'ytd-watch-metadata #top-level-buttons-computed, #actions #top-level-buttons-computed,' +
+      '#top-level-buttons-computed, ytd-watch-metadata #actions-inner, ytd-watch-metadata #actions'
     );
     if (!row) return;
 
     const btn = build();
-    // Juste apres le bloc J'aime / Je n'aime pas, sinon en fin de rangee.
     const like = row.querySelector(
       'segmented-like-dislike-button-view-model, like-button-view-model, ytd-toggle-button-renderer'
     );
-    if (like && like.parentElement === row) like.after(btn);
-    else row.appendChild(btn);
+
+    // Il faut inserer entre deux enfants DIRECTS de la rangee : on remonte donc
+    // du bloc J'aime jusqu'a l'enfant direct qui le contient. Exiger que le bloc
+    // soit lui-meme enfant direct suffisait avant, mais des que YouTube
+    // l'imbrique d'un cran le bouton partait en fin de rangee — hors du cadre du
+    // lecteur, donc invisible.
+    let ancre = like;
+    while (ancre && ancre.parentElement && ancre.parentElement !== row) ancre = ancre.parentElement;
+
+    if (ancre && ancre.parentElement === row) ancre.after(btn);
+    else row.insertBefore(btn, row.firstElementChild);   // jamais en fin de rangee
   }
 
   let pending = null;
