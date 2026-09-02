@@ -21,6 +21,15 @@
   window.__thumbviewTranscriptLoaded = true;
 
   const BTN_ID = 'thumbview-transcript-btn';
+
+  // Fourni par common.js, charge avant ce script. Le repli evite qu'un ordre de
+  // chargement inattendu casse la page.
+  const TV = window.__thumbview || {
+    settings: { get: () => ({ transcriptButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
+    deliver: async () => ({ ok: false, mode: 'clipboard' }),
+    slug: (v, f) => f,
+    stamp: () => ''
+  };
   const MARK = 'data-thumbview-ts';
   const TS_RE = /^\d{1,3}(?::[0-5]\d){1,2}$/;
 
@@ -346,24 +355,12 @@
     return lines.join('\r\n');
   }
 
-  async function copy(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch { /* plus d'activation utilisateur : on tente l'ancienne methode */ }
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0';
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand('copy');
-      ta.remove();
-      return ok;
-    } catch {
-      return false;
-    }
+  /** Un nom de fichier qui rappelle de quelle video vient la transcription. */
+  function fileName() {
+    const id = new URLSearchParams(location.search).get('v') || '';
+    const titre = document.querySelector('#title h1, h1.ytd-watch-metadata');
+    const base = TV.slug(titre ? titre.textContent : '', '') || TV.slug(id, 'video');
+    return 'transcription-' + base + '-' + TV.stamp() + '.csv';
   }
 
   /* ----------------------------------------------------------------- bouton */
@@ -422,8 +419,16 @@
       return;
     }
 
-    const ok = await copy(toCsv(rows));
-    setState(btn, ok ? 'ok' : 'ko', ok ? rows.length + ' lignes' : 'Copie refusée');
+    const { ok, mode } = await TV.deliver(toCsv(rows), fileName());
+    if (!ok) { setState(btn, 'ko', mode === 'file' ? 'Échec' : 'Copie refusée'); return; }
+    setState(btn, 'ok', rows.length + (mode === 'file' ? ' lignes ⤓' : ' lignes'));
+  }
+
+  /** Le libelle dit ce que le clic va reellement faire. */
+  function hint() {
+    return TV.settings.get().saveAsFile
+      ? 'Enregistrer la transcription en CSV'
+      : 'Copier la transcription au format CSV';
   }
 
   function build() {
@@ -432,8 +437,8 @@
     btn.className = 'thumbview-tr-btn';
     btn.type = 'button';
     btn.dataset.state = 'idle';
-    btn.title = 'Copier la transcription au format CSV';
-    btn.setAttribute('aria-label', 'Copier la transcription au format CSV');
+    btn.title = hint();
+    btn.setAttribute('aria-label', hint());
     btn.innerHTML =
       '<span class="thumbview-tr-icon">' + ICON_TEXT + '</span>' +
       '<span class="thumbview-tr-label"></span>';
@@ -452,12 +457,17 @@
   }
 
   function mount() {
-    if (!isWatchPage()) {
-      document.getElementById(BTN_ID)?.remove();
+    const existing = document.getElementById(BTN_ID);
+    if (!isWatchPage() || !TV.settings.get().transcriptButton) {
+      existing?.remove();
       return;
     }
-    const existing = document.getElementById(BTN_ID);
-    if (existing && existing.isConnected) return;
+    if (existing && existing.isConnected) {
+      // Le reglage « enregistrer un fichier » a pu changer depuis l'injection.
+      existing.title = hint();
+      existing.setAttribute('aria-label', hint());
+      return;
+    }
 
     const row = document.querySelector(
       'ytd-watch-metadata #top-level-buttons-computed, #actions #top-level-buttons-computed, #top-level-buttons-computed'
@@ -483,14 +493,21 @@
   window.addEventListener('yt-navigate-finish', () => schedule(400));
   window.addEventListener('yt-page-data-updated', () => schedule(400));
 
+  // Activation, desactivation ou changement de mode : effet immediat, sans
+  // avoir a recharger l'onglet.
+  TV.settings.onChange(() => schedule(0));
+
   let lastCheck = 0;
   new MutationObserver(() => {
     const now = Date.now();
     if (now - lastCheck < 600) return;
     lastCheck = now;
     const btn = document.getElementById(BTN_ID);
-    if (isWatchPage() ? !btn || !btn.isConnected : !!btn) schedule(200);
+    const attendu = isWatchPage() && TV.settings.get().transcriptButton;
+    if (attendu ? !btn || !btn.isConnected : !!btn) schedule(200);
   }).observe(document.documentElement, { childList: true, subtree: true });
 
-  schedule(600);
+  // On attend les reglages : sans ca, un bouton desactive apparaitrait une
+  // fraction de seconde avant d'etre retire.
+  TV.settings.ready.then(() => schedule(600));
 })();

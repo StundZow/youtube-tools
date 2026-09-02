@@ -35,6 +35,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 📝 **Copie de la transcription en CSV** — un bouton à côté du J'aime, timecodes de début et de fin inclus
 - 💾 **Export CSV des vidéos d'une page** — titre, chaîne, vues, date, durée, multiplicateur vidIQ, en un clic
 - 🧬 **Clonage d'une vraie carte** plutôt que du HTML figé — le style et la grille sont toujours ceux du layout courant de YouTube
+- ⚙️ **Paramètres** — activer ou désactiver chaque bouton, et choisir entre presse-papiers et fichier
 - 🌗 **Thème clair / sombre** dans le popup
 - 📋 **Glisser-déposer ou coller** la miniature et l'avatar, avec les champs mémorisés d'une fois sur l'autre
 - 🔒 **Aperçu ponctuel** — rien ne s'affiche tant que tu n'as pas cliqué, et tout disparaît dès que tu navigues
@@ -59,7 +60,7 @@ L'aperçu est **volontairement éphémère** : il n'apparaît qu'au clic, unique
 
 ## Copier la transcription (CSV)
 
-Sur chaque page de lecture, un petit bouton **☰** est ajouté juste à droite du bouton J'aime. Un clic copie toute la transcription dans le presse-papiers, prête à être collée dans un agent IA :
+Sur chaque page de lecture, un petit bouton **☰** est ajouté juste à droite du bouton J'aime. Un clic copie toute la transcription dans le presse-papiers — ou l'enregistre en fichier si le réglage le demande — prête à être collée dans un agent IA :
 
 ```csv
 start,end,text
@@ -75,7 +76,7 @@ Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidé
 
 ## Exporter les vidéos d'une page (CSV)
 
-Un bouton **⤓** est ajouté en haut de la page de résultats, à côté de « À propos de ces résultats » (et dans la barre du haut sur les autres pages). Il enregistre un fichier CSV de toutes les vidéos **actuellement chargées** :
+Un bouton **⤓** est ajouté en haut de la page de résultats, à côté de « À propos de ces résultats » (et dans la barre du haut sur les autres pages). Il copie dans le presse-papiers — ou enregistre un fichier, selon le réglage — toutes les vidéos **actuellement chargées** :
 
 ```csv
 position,titre,chaine,vues,vues_num,date,duree,multiplicateur,type,url
@@ -86,9 +87,23 @@ position,titre,chaine,vues,vues_num,date,duree,multiplicateur,type,url
 - `vues` garde le texte affiché, `vues_num` le convertit en nombre (`1,2 M de vues` → `1200000`) pour trier et calculer
 - `multiplicateur` reprend le `1.4x` de **vidIQ** quand l'extension est installée, sinon la colonne reste vide
 - `type` vaut `video`, `short` ou `playlist` — un Short n'a ni chaîne ni durée affichées, une playlist n'a pas de vues
-- le fichier commence par un BOM UTF-8, pour qu'Excel n'écrase pas les accents
+- en mode fichier, le CSV commence par un BOM UTF-8 pour qu'Excel n'écrase pas les accents
 
 **Rien n'est préchargé** : l'export prend exactement ce que la page a déjà chargé. Trois vidéos affichées donnent trois lignes ; on déroule longuement puis on clique, et tout y est.
+
+## Paramètres
+
+En bas du popup, trois interrupteurs :
+
+| Réglage | Effet |
+|---|---|
+| **Bouton transcription** | affiche ou retire le **☰** à côté du J'aime |
+| **Bouton export vidéos** | affiche ou retire le **⤓** en haut de page |
+| **Enregistrer un fichier** | désactivé (défaut), les deux boutons **copient dans le presse-papiers** ; activé, ils téléchargent un `.csv` |
+
+Le troisième réglage **vaut pour les deux boutons** — ils passent par la même fonction de remise, donc leur comportement ne peut pas diverger. Le libellé au survol suit le réglage : « Copier… » ou « Enregistrer… ».
+
+Les changements prennent effet **immédiatement**, sans recharger l'onglet : les scripts écoutent le stockage et posent ou retirent les boutons à la volée. Le BOM UTF-8 n'est ajouté que dans le fichier, jamais dans le presse-papiers — collé dans un agent IA, il n'aurait servi qu'à polluer la première ligne.
 
 ## Pourquoi l'ancienne version ne marchait plus
 
@@ -130,6 +145,7 @@ thumbnail-view/
 ├── popup.html/css/js   interface (thème clair/sombre, drag & drop, coller)
 ├── content.js       clonage + remplissage + réinjection
 ├── content.css      ajustements sur la carte injectée
+├── common.js        réglages partagés + remise (presse-papiers ou fichier)
 ├── transcript.js    bouton « copier la transcription » + export CSV
 ├── transcript.css   style du bouton, aligné sur celui de YouTube
 ├── videos.js        bouton « enregistrer » + export CSV des vidéos de la page

@@ -74,6 +74,26 @@
 
     <p id="status" class="status" role="status"></p>
 
+    <section class="settings">
+      <h2 class="label settings-title">Paramètres</h2>
+
+      <div class="switch-row">
+        <span class="switch-label">Bouton transcription</span>
+        <button id="setTranscript" class="switch" type="button" role="switch" aria-checked="true" aria-label="Afficher le bouton de transcription"><span class="knob"></span></button>
+      </div>
+
+      <div class="switch-row">
+        <span class="switch-label">Bouton export vidéos</span>
+        <button id="setVideos" class="switch" type="button" role="switch" aria-checked="true" aria-label="Afficher le bouton d'export des vidéos"><span class="knob"></span></button>
+      </div>
+
+      <div class="switch-row">
+        <span class="switch-label">Enregistrer un fichier</span>
+        <button id="setSaveFile" class="switch" type="button" role="switch" aria-checked="false" aria-label="Enregistrer un fichier au lieu de copier"><span class="knob"></span></button>
+      </div>
+      <p class="hint">Vaut pour les deux boutons. Désactivé, ils copient dans le presse-papiers.</p>
+    </section>
+
     <footer class="foot">
       Recodé en Manifest V3 — d'après <b>PrevYou</b> de BenjaminCode, design BastiUi.
     </footer>

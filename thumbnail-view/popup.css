@@ -243,3 +243,13 @@ input[type="text"]:focus { border-bottom-color: var(--accent); }
   line-height: 1.5;
 }
 .foot b { color: var(--text); font-weight: 600; }
+
+/* ---------- paramètres ---------- */
+.settings {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.settings-title { margin: 0 0 12px; font-size: 12.5px; }
+.settings .switch-row + .switch-row { margin-top: 12px; }
+.settings .hint { margin-top: 10px; }

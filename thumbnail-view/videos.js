@@ -24,6 +24,15 @@
 
   const BTN_ID = 'thumbview-videos-btn';
 
+  // Fourni par common.js, charge avant ce script. Le repli evite qu'un ordre de
+  // chargement inattendu casse la page.
+  const TV = window.__thumbview || {
+    settings: { get: () => ({ videosButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
+    deliver: async () => ({ ok: false, mode: 'clipboard' }),
+    slug: (v, f) => f,
+    stamp: () => ''
+  };
+
   /* ------------------------------------------------------ reperage des cartes */
 
   const CARD_TAGS = [
@@ -279,35 +288,9 @@
 
   /** Un nom de fichier qui rappelle d'ou vient l'export. */
   function fileName() {
-    const params = new URLSearchParams(location.search);
-    let context = params.get('search_query') || '';
-    if (!context) {
-      const path = location.pathname.replace(/^\/+|\/+$/g, '');
-      context = path || 'accueil';
-    }
-    context = context
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-      .slice(0, 48) || 'page';
-
-    const d = new Date();
-    const p2 = (n) => String(n).padStart(2, '0');
-    const stamp = d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
-    return 'youtube-' + context + '-' + stamp + '.csv';
-  }
-
-  /** Le BOM evite qu'Excel massacre les accents a l'ouverture. */
-  function download(csv, name) {
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    const query = new URLSearchParams(location.search).get('search_query');
+    const context = query || location.pathname.replace(/^\/+|\/+$/g, '') || 'accueil';
+    return 'youtube-' + TV.slug(context, 'page') + '-' + TV.stamp() + '.csv';
   }
 
   /* ------------------------------------------------------------------ bouton */
@@ -336,7 +319,14 @@
     }
   }
 
-  function onClick(btn) {
+  /** Le libelle dit ce que le clic va reellement faire. */
+  function hint() {
+    return TV.settings.get().saveAsFile
+      ? 'Enregistrer les vidéos chargées de la page en CSV'
+      : 'Copier les vidéos chargées de la page en CSV';
+  }
+
+  async function onClick(btn) {
     let rows = [];
     try {
       rows = collect();
@@ -353,8 +343,9 @@
       return;
     }
 
-    download(toCsv(rows), fileName());
-    setState(btn, 'ok', rows.length + ' vidéos');
+    const { ok, mode } = await TV.deliver(toCsv(rows), fileName());
+    if (!ok) { setState(btn, 'ko', mode === 'file' ? 'Échec' : 'Copie refusée'); return; }
+    setState(btn, 'ok', rows.length + (mode === 'file' ? ' vidéos ⤓' : ' vidéos'));
   }
 
   function build() {
@@ -363,8 +354,8 @@
     btn.className = 'thumbview-vd-btn';
     btn.type = 'button';
     btn.dataset.state = 'idle';
-    btn.title = 'Enregistrer les vidéos chargées de la page en CSV';
-    btn.setAttribute('aria-label', 'Enregistrer les vidéos chargées de la page en CSV');
+    btn.title = hint();
+    btn.setAttribute('aria-label', hint());
     btn.innerHTML =
       '<span class="thumbview-vd-icon">' + ICON_SAVE + '</span>' +
       '<span class="thumbview-vd-label"></span>';
@@ -380,7 +371,14 @@
 
   function mount() {
     const existing = document.getElementById(BTN_ID);
-    if (existing && existing.isConnected) return;
+
+    if (!TV.settings.get().videosButton) { existing?.remove(); return; }
+    if (existing && existing.isConnected) {
+      // Le reglage « enregistrer un fichier » a pu changer depuis l'injection.
+      existing.title = hint();
+      existing.setAttribute('aria-label', hint());
+      return;
+    }
 
     // L'emplacement demande : juste a cote de « A propos de ces resultats ».
     const header = document.querySelector('#about-these-results');
@@ -400,8 +398,13 @@
   window.addEventListener('yt-navigate-finish', () => schedule(400));
   window.addEventListener('yt-page-data-updated', () => schedule(400));
 
+  // Activation, desactivation ou changement de mode : effet immediat, sans
+  // avoir a recharger l'onglet.
+  TV.settings.onChange(() => schedule(0));
+
   let lastCheck = 0;
   new MutationObserver(() => {
+    if (!TV.settings.get().videosButton) return;      // rien a reposer
     const now = Date.now();
     if (now - lastCheck < 700) return;
     lastCheck = now;
@@ -409,5 +412,7 @@
     if (!btn || !btn.isConnected) schedule(200);
   }).observe(document.documentElement, { childList: true, subtree: true });
 
-  schedule(600);
+  // On attend les reglages : sans ca, un bouton desactive apparaitrait une
+  // fraction de seconde avant d'etre retire.
+  TV.settings.ready.then(() => schedule(600));
 })();

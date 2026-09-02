@@ -2,6 +2,16 @@
 
 const KEY = 'thumbview';
 const OLD_KEY = 'prevyou';                  // avant le renommage en Thumbnail View
+
+// Reglages des boutons injectes dans YouTube. Cle separee des champs d'apercu :
+// les scripts de contenu ne lisent que celle-ci, et l'aperçu reste ponctuel.
+const SETTINGS_KEY = 'thumbviewSettings';
+const SETTINGS_DEFAULTS = {
+  transcriptButton: true,
+  videosButton: true,
+  saveAsFile: false
+};
+let settings = { ...SETTINGS_DEFAULTS };
 const DEFAULTS = {
   channel: '',
   title: '',
@@ -20,7 +30,8 @@ const el = {
   clearThumb: $('clearThumb'), thumbInfo: $('thumbInfo'),
   title: $('videoTitle'), titleCount: $('titleCount'),
   random: $('randomPos'),
-  preview: $('preview'), remove: $('remove'), status: $('status')
+  preview: $('preview'), remove: $('remove'), status: $('status'),
+  setTranscript: $('setTranscript'), setVideos: $('setVideos'), setSaveFile: $('setSaveFile')
 };
 
 let state = { ...DEFAULTS };
@@ -31,18 +42,26 @@ let live = false;
 /* ------------------------------------------------------------------ state */
 
 async function load() {
-  const stored = await chrome.storage.local.get([KEY, OLD_KEY]);
+  const stored = await chrome.storage.local.get([KEY, OLD_KEY, SETTINGS_KEY]);
   // Renommer l'extension ne doit pas faire perdre les champs deja saisis : on
   // reprend ceux de l'ancienne cle, puis on la supprime.
   const saved = stored[KEY] || stored[OLD_KEY] || {};
   state = { ...DEFAULTS, ...saved };
   delete state.enabled;                       // résidu des anciennes versions
+  settings = { ...SETTINGS_DEFAULTS, ...(stored[SETTINGS_KEY] || {}) };
   if (!stored[KEY] && stored[OLD_KEY]) {
     await chrome.storage.local.set({ [KEY]: state });
     await chrome.storage.local.remove(OLD_KEY);
   }
   render();
   live = await ping();
+  render();
+}
+
+/** Les scripts de contenu suivent cette cle : ecrire suffit a tout mettre a jour. */
+async function saveSettings(patch) {
+  settings = { ...settings, ...patch };
+  await chrome.storage.local.set({ [SETTINGS_KEY]: settings });
   render();
 }
 
@@ -71,6 +90,10 @@ function render() {
   el.titleCount.textContent = state.title.length;
 
   el.random.setAttribute('aria-checked', String(!!state.random));
+
+  el.setTranscript.setAttribute('aria-checked', String(!!settings.transcriptButton));
+  el.setVideos.setAttribute('aria-checked', String(!!settings.videosButton));
+  el.setSaveFile.setAttribute('aria-checked', String(!!settings.saveAsFile));
 
   setImg(el.thumbImg, state.thumb);
   el.drop.classList.toggle('filled', !!state.thumb);
@@ -297,5 +320,9 @@ document.addEventListener('paste', (e) => {
 
 el.preview.addEventListener('click', () => apply());
 el.remove.addEventListener('click', removePreview);
+
+el.setTranscript.addEventListener('click', () => saveSettings({ transcriptButton: !settings.transcriptButton }));
+el.setVideos.addEventListener('click', () => saveSettings({ videosButton: !settings.videosButton }));
+el.setSaveFile.addEventListener('click', () => saveSettings({ saveAsFile: !settings.saveAsFile }));
 
 load();
