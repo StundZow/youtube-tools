@@ -415,19 +415,67 @@
    * rester celui de la video precedente : on ne s'en sert que si une de ses URL
    * porte bien l'identifiant courant.
    */
-  function dateMicrodonnees(id) {
+  /** Un compteur d'interaction du bloc microdata : likes, vues... */
+  function compteur(type) {
+    for (const bloc of document.querySelectorAll('[itemprop="interactionStatistic"]')) {
+      const t = bloc.querySelector('[itemprop="interactionType"]');
+      const n = bloc.querySelector('[itemprop="userInteractionCount"]');
+      if (!t || !n) continue;
+      if (!(t.getAttribute('content') || '').includes(type)) continue;
+      const v = Number(n.getAttribute('content'));
+      if (Number.isFinite(v)) return v;
+    }
+    return '';
+  }
+
+  function microdonnees(id) {
+    if (!id) return null;
+
+    // Rien pour verifier a quelle video ce bloc se rapporte : on s'abstient.
+    const ref = document.querySelector('link[itemprop="thumbnailUrl"], link[itemprop="embedUrl"]');
+    const href = ref ? ref.getAttribute('href') || '' : '';
+    if (!href || !href.includes(id)) return null;
+
     const meta = document.querySelector(
       'meta[itemprop="datePublished"], meta[itemprop="uploadDate"]'
     );
-    const contenu = meta ? meta.getAttribute('content') || '' : '';
-    if (!/^\d{4}-\d{2}-\d{2}/.test(contenu)) return '';
+    const brut = meta ? meta.getAttribute('content') || '' : '';
 
-    if (!id) return '';
-    const ref = document.querySelector('link[itemprop="thumbnailUrl"], link[itemprop="embedUrl"]');
-    const href = ref ? ref.getAttribute('href') || '' : '';
-    if (!href || !href.includes(id)) return '';      // rien pour verifier : on s'abstient
+    // L'horodatage porte le fuseau de publication (« ...T15:02:53-07:00 ») : on
+    // le ramene au fuseau local, sinon date_iso peut tomber un jour avant celle
+    // qu'affiche YouTube.
+    let date = '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(brut)) {
+      const d = new Date(brut);
+      date = Number.isFinite(d.getTime()) ? isoDe(d) : brut.slice(0, 10);
+    }
 
-    return contenu.slice(0, 10);
+    return {
+      date,
+      likes: compteur('LikeAction'),
+      vues: compteur('WatchAction')
+    };
+  }
+
+  /**
+   * Repli pour les likes : l'aria-label du bouton J'aime porte le compte EXACT
+   * (« J'aime cette video, comme 21 816 autres personnes avant moi »), la ou son
+   * texte visible ne donne que l'arrondi (« 21 k »).
+   */
+  function likesDuBouton() {
+    const btn = document.querySelector(
+      'like-button-view-model button, segmented-like-dislike-button-view-model button,' +
+      'ytd-toggle-button-renderer button'
+    );
+    if (!btn) return '';
+
+    const exact = (btn.getAttribute('aria-label') || '').match(/\d[\d\s  .,]*/);
+    if (exact) {
+      const n = TV.parseCount(exact[0]);
+      if (n !== '') return n;
+    }
+    const visible = clean(btn.textContent);
+    return visible ? TV.parseCount(visible) : '';
   }
 
   function videoMeta() {
@@ -448,6 +496,7 @@
       if (frags.length) break;
     }
 
+    const micro = microdonnees(id);
     let vues = frags.find((t) => TV.RE.views.test(t)) || '';
     let date = frags.find((t) =>
       !TV.RE.views.test(t) && (TV.RE.date.test(t) || ANNEE_RE.test(t))) || '';
@@ -481,9 +530,11 @@
         '#owner a[href^="/@"]'
       ]),
       vues,
-      vues_num: vues ? TV.parseCount(vues) : '',
+      vues_num: vues ? TV.parseCount(vues) : (micro ? micro.vues : ''),
       date,
-      date_iso: dateMicrodonnees(id) || absolueEnIso(date) || relativeEnIso(date),
+      date_iso: (micro && micro.date) || absolueEnIso(date) || relativeEnIso(date),
+      // Le bloc microdata donne le compte exact ; le bouton n'est qu'un repli.
+      likes: (micro && micro.likes !== '') ? micro.likes : likesDuBouton(),
       duree: pickText(['.ytp-time-duration']),
       url: id ? 'https://www.youtube.com/watch?v=' + id : location.href,
       id
@@ -491,7 +542,7 @@
   }
 
   const COLUMNS = ['titre', 'chaine', 'debut', 'fin', 'debut_s', 'texte',
-                   'date', 'date_iso', 'vues', 'vues_num', 'duree', 'url', 'id'];
+                   'date', 'date_iso', 'vues', 'vues_num', 'likes', 'duree', 'url', 'id'];
 
   function toCsv(rows) {
     const meta = videoMeta();
