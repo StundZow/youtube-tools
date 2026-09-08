@@ -113,6 +113,76 @@
     return { ok: copied || file, copied, file };
   }
 
+  /* --------------------------------------------- maintien d'un bouton pose */
+
+  /**
+   * Garde un bouton en place dans une page qui se reconstruit sans arret.
+   *
+   * Deux garde-fous, chacun bouchant le trou de l'autre :
+   *
+   *  - un throttle a bord de FUITE. La version precedente ignorait toute
+   *    mutation survenue dans les 600 ms suivant une verification aboutie. Si
+   *    YouTube reconstruisait la rangee d'actions pile dans cette fenetre et que
+   *    la page se taisait ensuite, plus aucune verification ne se declenchait :
+   *    le bouton restait absent jusqu'a la navigation suivante. On regroupe donc
+   *    les mutations sans jamais perdre la derniere.
+   *
+   *  - une relance espacee tant que le bouton est attendu mais absent, pour ne
+   *    dependre d'aucune mutation future : la rangee peut arriver dans une page
+   *    devenue silencieuse.
+   */
+  function keepMounted({ id, wanted, place, refresh }) {
+    let timer = null;
+    let essais = 0;
+    let enAttente = false;
+    let dernier = 0;
+
+    const vivant = () => {
+      const el = document.getElementById(id);
+      return el && el.isConnected ? el : null;
+    };
+
+    function planifie(delai = 200) {
+      clearTimeout(timer);
+      timer = setTimeout(tick, delai);
+    }
+
+    function tick() {
+      const el = vivant();
+
+      if (!wanted()) { if (el) el.remove(); essais = 0; return; }
+      if (el) { if (refresh) refresh(el); essais = 0; return; }
+
+      try { place(); } catch { /* la rangee n'est pas encore prete */ }
+
+      if (vivant()) { essais = 0; return; }
+      if (essais < 40) {
+        essais++;
+        planifie(Math.min(2000, 150 + essais * 100));
+      }
+    }
+
+    function relance(delai) { essais = 0; planifie(delai); }
+
+    window.addEventListener('yt-navigate-finish', () => relance(400));
+    window.addEventListener('yt-page-data-updated', () => relance(400));
+    settings.onChange(() => relance(0));
+
+    new MutationObserver(() => {
+      if (enAttente) return;
+      enAttente = true;
+      setTimeout(() => {
+        enAttente = false;
+        dernier = Date.now();
+        tick();
+      }, Math.max(0, 400 - (Date.now() - dernier)));
+    }).observe(document.documentElement, { childList: true, subtree: true });
+
+    // On attend les reglages : sans ca, un bouton desactive apparaitrait une
+    // fraction de seconde avant d'etre retire.
+    settings.ready.then(() => relance(600));
+  }
+
   /** Morceau de nom de fichier sur : sans accents, sans espaces, borne. */
   function slug(value, fallback) {
     const out = String(value || '')
@@ -128,5 +198,5 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  window.__yttools = { settings, deliver, copyText, downloadText, slug, stamp };
+  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, slug, stamp };
 })();

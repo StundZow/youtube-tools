@@ -144,6 +144,13 @@ Points à connaître, tous mis au jour en faisant tourner l'extracteur sur une v
 - le premier badge d'un Short est « Nouveau », pas une durée ;
 - la fausse carte de l'aperçu de miniature est explicitement exclue de l'export.
 
+### Garder un bouton posé
+
+YouTube reconstruit ses rangées d'actions en permanence, et un bouton injecté part avec elles. Les deux boutons partagent donc un même mécanisme de maintien (`keepMounted` dans `common.js`), avec deux garde-fous qui bouchent chacun le trou de l'autre :
+
+- un **throttle à bord de fuite** : les mutations sont regroupées, mais la dernière n'est jamais perdue. Une version antérieure ignorait toute mutation survenue dans les 600 ms suivant une vérification aboutie — si YouTube reconstruisait la rangée pile dans cette fenêtre et que la page se taisait ensuite, aucune vérification ne se relançait et le bouton restait absent jusqu'à la navigation suivante ;
+- une **relance espacée** tant que le bouton est attendu mais absent, pour ne dépendre d'aucune mutation future : la rangée peut très bien arriver dans une page devenue silencieuse.
+
 ## Structure
 
 ```
@@ -153,7 +160,7 @@ youtube-tools/
 ├── popup.html/css/js   interface (thème clair/sombre, drag & drop, coller)
 ├── content.js       clonage + remplissage + réinjection
 ├── content.css      ajustements sur la carte injectée
-├── common.js        réglages partagés + remise (presse-papiers ou fichier)
+├── common.js        réglages, remise (presse-papiers / fichier), maintien des boutons
 ├── transcript.js    bouton « copier la transcription » + export CSV
 ├── transcript.css   style du bouton, aligné sur celui de YouTube
 ├── videos.js        bouton « enregistrer » + export CSV des vidéos de la page

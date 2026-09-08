@@ -29,7 +29,8 @@
   // chargement inattendu casse la page.
   const TV = window.__yttools || {
     settings: { get: () => ({ videosButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
-    deliver: async () => ({ ok: false, mode: 'clipboard' }),
+    deliver: async () => ({ ok: false, copied: false, file: false }),
+    keepMounted: ({ place }) => setTimeout(place, 900),
     slug: (v, f) => f,
     stamp: () => ''
   };
@@ -370,17 +371,15 @@
 
   /* --------------------------------------------------------------- injection */
 
-  function mount() {
-    const existing = document.getElementById(BTN_ID);
+  /** Le reglage « enregistrer un fichier » a pu changer depuis l'injection. */
+  function refresh(el) {
+    const h = hint();
+    if (el.title === h) return;
+    el.title = h;
+    el.setAttribute('aria-label', h);
+  }
 
-    if (!TV.settings.get().videosButton) { existing?.remove(); return; }
-    if (existing && existing.isConnected) {
-      // Le reglage « enregistrer un fichier » a pu changer depuis l'injection.
-      existing.title = hint();
-      existing.setAttribute('aria-label', hint());
-      return;
-    }
-
+  function place() {
     // Dans la barre du haut, juste a gauche du bouton « Creer ». La barre est
     // fixe et presente sur toutes les pages : le bouton reste donc visible
     // partout, y compris quand on fait defiler.
@@ -392,30 +391,10 @@
     if (end) end.insertBefore(build(), end.firstChild);
   }
 
-  let pending = null;
-  function schedule(delay = 250) {
-    clearTimeout(pending);
-    pending = setTimeout(mount, delay);
-  }
-
-  window.addEventListener('yt-navigate-finish', () => schedule(400));
-  window.addEventListener('yt-page-data-updated', () => schedule(400));
-
-  // Activation, desactivation ou changement de mode : effet immediat, sans
-  // avoir a recharger l'onglet.
-  TV.settings.onChange(() => schedule(0));
-
-  let lastCheck = 0;
-  new MutationObserver(() => {
-    if (!TV.settings.get().videosButton) return;      // rien a reposer
-    const now = Date.now();
-    if (now - lastCheck < 700) return;
-    lastCheck = now;
-    const btn = document.getElementById(BTN_ID);
-    if (!btn || !btn.isConnected) schedule(200);
-  }).observe(document.documentElement, { childList: true, subtree: true });
-
-  // On attend les reglages : sans ca, un bouton desactive apparaitrait une
-  // fraction de seconde avant d'etre retire.
-  TV.settings.ready.then(() => schedule(600));
+  TV.keepMounted({
+    id: BTN_ID,
+    wanted: () => TV.settings.get().videosButton,
+    place,
+    refresh
+  });
 })();

@@ -26,7 +26,8 @@
   // chargement inattendu casse la page.
   const TV = window.__yttools || {
     settings: { get: () => ({ transcriptButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
-    deliver: async () => ({ ok: false, mode: 'clipboard' }),
+    deliver: async () => ({ ok: false, copied: false, file: false }),
+    keepMounted: ({ place }) => setTimeout(place, 900),
     slug: (v, f) => f,
     stamp: () => ''
   };
@@ -456,19 +457,15 @@
     return location.pathname === '/watch' && !!new URLSearchParams(location.search).get('v');
   }
 
-  function mount() {
-    const existing = document.getElementById(BTN_ID);
-    if (!isWatchPage() || !TV.settings.get().transcriptButton) {
-      existing?.remove();
-      return;
-    }
-    if (existing && existing.isConnected) {
-      // Le reglage « enregistrer un fichier » a pu changer depuis l'injection.
-      existing.title = hint();
-      existing.setAttribute('aria-label', hint());
-      return;
-    }
+  /** Le reglage « enregistrer un fichier » a pu changer depuis l'injection. */
+  function refresh(el) {
+    const h = hint();
+    if (el.title === h) return;
+    el.title = h;
+    el.setAttribute('aria-label', h);
+  }
 
+  function place() {
     const row = document.querySelector(
       'ytd-watch-metadata #top-level-buttons-computed, #actions #top-level-buttons-computed,' +
       '#top-level-buttons-computed, ytd-watch-metadata #actions-inner, ytd-watch-metadata #actions'
@@ -492,31 +489,10 @@
     else row.insertBefore(btn, row.firstElementChild);   // jamais en fin de rangee
   }
 
-  let pending = null;
-  function schedule(delay = 250) {
-    clearTimeout(pending);
-    pending = setTimeout(mount, delay);
-  }
-
-  // YouTube reconstruit la rangee d'actions a chaque navigation interne.
-  window.addEventListener('yt-navigate-finish', () => schedule(400));
-  window.addEventListener('yt-page-data-updated', () => schedule(400));
-
-  // Activation, desactivation ou changement de mode : effet immediat, sans
-  // avoir a recharger l'onglet.
-  TV.settings.onChange(() => schedule(0));
-
-  let lastCheck = 0;
-  new MutationObserver(() => {
-    const now = Date.now();
-    if (now - lastCheck < 600) return;
-    lastCheck = now;
-    const btn = document.getElementById(BTN_ID);
-    const attendu = isWatchPage() && TV.settings.get().transcriptButton;
-    if (attendu ? !btn || !btn.isConnected : !!btn) schedule(200);
-  }).observe(document.documentElement, { childList: true, subtree: true });
-
-  // On attend les reglages : sans ca, un bouton desactive apparaitrait une
-  // fraction de seconde avant d'etre retire.
-  TV.settings.ready.then(() => schedule(600));
+  TV.keepMounted({
+    id: BTN_ID,
+    wanted: () => isWatchPage() && TV.settings.get().transcriptButton,
+    place,
+    refresh
+  });
 })();
