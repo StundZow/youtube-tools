@@ -360,18 +360,64 @@
    * — c'est ce qui permet de concatener plusieurs transcriptions dans un meme
    * fichier sans perdre de quelle video vient chaque ligne.
    */
+  /** Les textes de feuilles d'un conteneur, dans l'ordre d'affichage. */
+  function leafTexts(root) {
+    const out = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+    for (let el = walker.nextNode(); el; el = walker.nextNode()) {
+      if (el.children.length) continue;
+      const t = clean(el.textContent);
+      if (t) out.push(t);
+    }
+    return out;
+  }
+
+  // « 17 aout 2026 », « Aug 17, 2026 », « 2026-08-17 » : sur une page de lecture
+  // YouTube affiche une date ABSOLUE, que RE.date (concu pour le « il y a » des
+  // cartes) ne reconnait pas.
+  const ANNEE_RE = /\b(19|20)\d{2}\b/;
+
   function videoMeta() {
     const id = new URLSearchParams(location.search).get('v') || '';
 
-    // Vues et date vivent dans la meme zone, sans etiquette : on les distingue
-    // par ce qu'elles disent, avec les motifs partages de common.js.
-    const zone = document.querySelector('ytd-watch-info-text, #info-container, #info');
-    const frags = zone
-      ? [...zone.querySelectorAll('span, yt-formatted-string, yt-attributed-string')]
-          .map((n) => clean(n.textContent)).filter(Boolean)
-      : [];
-    const vues = frags.find((t) => TV.RE.views.test(t)) || '';
-    const date = frags.find((t) => TV.RE.date.test(t)) || '';
+    // Vues et date partagent le meme conteneur, sans etiquette : on les
+    // distingue par ce qu'elles disent.
+    //
+    // Attention : querySelector('a, b, c') rend le premier element dans l'ordre
+    // du DOCUMENT, pas dans l'ordre des selecteurs. Lister plusieurs identifiants
+    // d'un coup faisait tomber sur un autre « #info » de la page, d'ou des
+    // colonnes vues et date vides. On essaie donc les conteneurs un par un.
+    let frags = [];
+    for (const sel of ['ytd-watch-info-text #info', 'ytd-watch-info-text', '#info-container']) {
+      const zone = document.querySelector(sel);
+      if (!zone) continue;
+      frags = leafTexts(zone);
+      if (frags.length) break;
+    }
+
+    let vues = frags.find((t) => TV.RE.views.test(t)) || '';
+    let date = frags.find((t) =>
+      !TV.RE.views.test(t) && (TV.RE.date.test(t) || ANNEE_RE.test(t))) || '';
+
+    // Replis : l'ancien renderer, puis un balayage du bloc de metadonnees.
+    if (!vues) {
+      vues = pickText([
+        'ytd-video-view-count-renderer .view-count',
+        'ytd-video-view-count-renderer .short-view-count',
+        '.view-count',
+        '.short-view-count'
+      ]);
+    }
+    const bloc = document.querySelector('ytd-watch-metadata');
+    if ((!vues || !date) && bloc) {
+      const tout = leafTexts(bloc);
+      if (!vues) vues = tout.find((t) => TV.RE.views.test(t)) || '';
+      if (!date) {
+        date = tout.find((t) =>
+          !TV.RE.views.test(t) && t.length <= 40 &&
+          (TV.RE.date.test(t) || ANNEE_RE.test(t))) || '';
+      }
+    }
 
     return {
       titre: pickText(['ytd-watch-metadata h1 yt-formatted-string', 'ytd-watch-metadata h1', '#title h1']),

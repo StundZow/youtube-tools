@@ -68,14 +68,14 @@ Sur chaque page de lecture, un petit bouton **☰** est ajouté juste à droite 
 
 ```csv
 titre,chaine,debut,fin,debut_s,texte,date,vues,vues_num,duree,url,id
-"Ma vidéo","Ma Chaîne","0:00","0:04","0","Bonjour à tous et bienvenue","il y a 2 mois","1,2 M de vues","1200000","23:26","https://www.youtube.com/watch?v=Gte_f12IX5I","Gte_f12IX5I"
+"Je joue à HIGHSCHOOL SIMULATOR..","Caylus","0:00","0:05","0","Première phrase","17 août 2026","1 659 225 vues","1659225","1:00:44","https://www.youtube.com/watch?v=lZGoJT4abos","lZGoJT4abos"
 ```
 
 - les métadonnées de la vidéo — titre, chaîne, vues, date, durée, URL, ID — sont **répétées sur chaque ligne** : on peut ainsi concaténer plusieurs transcriptions dans un même fichier sans perdre de quelle vidéo vient chaque ligne
 - `debut` / `fin` en `m:ss`, ou `h:mm:ss` si la vidéo dépasse une heure ; `debut_s` donne la même chose en secondes, pour trier et calculer
 - `fin` correspond au début du segment suivant
-- `vues` garde le texte affiché, `vues_num` le convertit en nombre
-- `date` est celle qu'affiche YouTube, donc relative (« il y a 2 mois ») — la page ne donne pas de date absolue
+- `vues` reprend le **compte exact** affiché sous la vidéo (`1 659 225 vues`), pas l'arrondi ; `vues_num` le convertit en nombre
+- `date` est la **date absolue** de publication (`17 août 2026`), telle que la page de lecture l'affiche
 - champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien
 
 Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidéo n'a pas de transcription. En cas d'échec, un diagnostic part dans la console (`[YouTube Tools] transcription introuvable`).
