@@ -14,6 +14,10 @@
  * texte *est* un timecode, puis on remonte jusqu'a la ligne qui les contient.
  * Ca survit aux renommages de YouTube et fonctionne meme si une autre extension
  * a redecore le panneau.
+ *
+ * Tout est lu dans le DOM. L'extension n'emet AUCUNE requete vers YouTube : un
+ * repli qui interrogeait /youtubei/v1/get_transcript a ete retire pour ne pas
+ * ressembler a du trafic automatise.
  */
 
 (() => {
@@ -110,6 +114,58 @@
     return node;
   }
 
+  /**
+   * « 1 minute et 2 secondes » -> 62. Renvoie null si le texte ne ressemble pas
+   * a une duree parlee.
+   */
+  function spokenSeconds(text) {
+    const unites = [
+      [/(\d+)\s*(?:h\b|heures?|hours?|hrs?\b|std\b)/i, 3600],
+      [/(\d+)\s*(?:min(?:ute)?s?\b)/i, 60],
+      [/(\d+)\s*(?:s\b|sec(?:onde|ond)?e?s?\b|sek\b)/i, 1]
+    ];
+    let total = 0;
+    let trouve = 0;
+    for (const [re, mult] of unites) {
+      const m = text.match(re);
+      if (m) { total += Number(m[1]) * mult; trouve++; }
+    }
+    return trouve ? total : null;
+  }
+
+  /**
+   * Le texte d'une ligne de transcription.
+   *
+   * A cote du timecode visible, YouTube place sa version parlee pour les
+   * lecteurs d'ecran (« 1 minute et 2 secondes »). Prendre le textContent de la
+   * ligne collait ce libelle au sous-titre : « 1 minute et 2 secondesEvery job
+   * is still random ». On assemble donc les feuilles une a une, en ecartant le
+   * timecode et toute feuille dont la duree parlee vaut exactement le debut du
+   * segment — un sous-titre qui commencerait par « 3 minutes plus tard » reste
+   * ainsi intact.
+   */
+  function rowText(node, stamp, start) {
+    const morceaux = [];
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
+    for (let el = walker.nextNode(); el; el = walker.nextNode()) {
+      if (el.children.length) continue;
+      if (el === stamp) continue;
+      const t = clean(el.textContent);
+      if (!t) continue;
+      if (spokenSeconds(t) === start) continue;       // le timecode, en toutes lettres
+      morceaux.push(t);
+    }
+
+    if (morceaux.length) return clean(morceaux.join(' '));
+
+    // Structure plate, sans feuille exploitable : on retire le timecode du tout.
+    const label = stamp.textContent;
+    let texte = node.textContent;
+    const at = texte.indexOf(label);
+    if (at >= 0) texte = texte.slice(0, at) + texte.slice(at + label.length);
+    return clean(texte);
+  }
+
   function readSegments(root) {
     const stamps = timestampLeaves(root);
     if (stamps.length < 2) return [];
@@ -124,12 +180,7 @@
         const node = rowOf(stamp, root);
         if (node === stamp) continue;             // timecode isole, sans texte
 
-        const label = stamp.textContent;
-        let text = node.textContent;
-        const at = text.indexOf(label);
-        if (at >= 0) text = text.slice(0, at) + text.slice(at + label.length);
-        text = text.replace(/\s+/g, ' ').trim();
-
+        const text = rowText(node, stamp, start);
         if (text) rows.push({ start, end: null, text });
       }
     } finally {
@@ -254,90 +305,6 @@
     return rows.length ? rows : null;
   }
 
-  /* ------------------------------------------------- repli : API InnerTube */
-
-  function pageScripts() {
-    let out = '';
-    for (const s of document.querySelectorAll('script')) {
-      const t = s.textContent;
-      if (t) out += t + '\n';
-    }
-    return out;
-  }
-
-  /**
-   * Les balises <script> ne sont pas rafraichies lors d'une navigation interne :
-   * les parametres peuvent viser une AUTRE video. On verifie donc que l'id de la
-   * video courante est bien celui encode dans les parametres, sinon on renonce
-   * plutot que de copier la mauvaise transcription.
-   */
-  function paramsMatchVideo(params, videoId) {
-    try {
-      const b64 = decodeURIComponent(params).replace(/-/g, '+').replace(/_/g, '/');
-      return atob(b64).includes(videoId);
-    } catch {
-      return false;
-    }
-  }
-
-  /** Ramasse tout objet ressemblant a un segment, quelle que soit sa profondeur. */
-  function harvest(node, out, depth = 0) {
-    if (!node || typeof node !== 'object' || depth > 30) return;
-    if (Array.isArray(node)) {
-      for (const n of node) harvest(n, out, depth + 1);
-      return;
-    }
-    const seg = node.transcriptSegmentRenderer;
-    if (seg && seg.snippet) {
-      const text = (seg.snippet.runs || [])
-        .map((r) => r.text || '')
-        .join('')
-        .replace(/\s+/g, ' ')
-        .trim();
-      const start = Number(seg.startMs);
-      if (text && Number.isFinite(start)) {
-        const end = Number(seg.endMs);
-        out.push({ start: start / 1000, end: Number.isFinite(end) ? end / 1000 : null, text });
-      }
-      return;
-    }
-    for (const k in node) harvest(node[k], out, depth + 1);
-  }
-
-  async function fromApi() {
-    const videoId = new URLSearchParams(location.search).get('v');
-    const src = pageScripts();
-    const params = (src.match(/"getTranscriptEndpoint":\s*\{\s*"params":\s*"([^"]+)"/) || [])[1];
-    const key = (src.match(/"INNERTUBE_API_KEY":\s*"([^"]+)"/) || [])[1];
-    const version = (src.match(/"INNERTUBE_CLIENT_VERSION":\s*"([^"]+)"/) || [])[1];
-    if (!params || !key || !version || !videoId) return null;
-    if (!paramsMatchVideo(params, videoId)) return null;
-
-    const res = await fetch('/youtubei/v1/get_transcript?key=' + key + '&prettyPrint=false', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        context: {
-          client: {
-            clientName: 'WEB',
-            clientVersion: version,
-            hl: (src.match(/"HL":\s*"([^"]+)"/) || [])[1] || 'fr',
-            gl: (src.match(/"GL":\s*"([^"]+)"/) || [])[1] || 'FR'
-          }
-        },
-        params
-      })
-    });
-    if (!res.ok) return null;
-
-    const rows = [];
-    harvest(await res.json(), rows);
-    if (!rows.length) return null;
-
-    return closeEnds(rows);
-  }
-
   /* -------------------------------------------------------------------- CSV */
 
   const cell = (v) => '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"';
@@ -372,10 +339,96 @@
     return out;
   }
 
-  // « 17 aout 2026 », « Aug 17, 2026 », « 2026-08-17 » : sur une page de lecture
-  // YouTube affiche une date ABSOLUE, que RE.date (concu pour le « il y a » des
+  // « 17 aout 2026 », « Aug 17, 2026 », « 2026-08-17 » : une page de lecture
+  // affiche parfois une date ABSOLUE, que RE.date (concu pour le « il y a » des
   // cartes) ne reconnait pas.
   const ANNEE_RE = /\b(19|20)\d{2}\b/;
+
+  const sansAccents = (t) =>
+    String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  const MOIS = {
+    jan: 1, feb: 2, fev: 2, mar: 3, apr: 4, avr: 4, may: 5, mai: 5, jun: 6, jui: 6,
+    jul: 7, aug: 8, aou: 8, sep: 9, oct: 10, nov: 11, dec: 12
+  };
+
+  const isoDe = (d) =>
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+
+  /** « 17 aout 2026 », « Aug 17, 2026 », « 2026-08-17 » -> « 2026-08-17 ». */
+  function absolueEnIso(texte) {
+    const t = sansAccents(texte);
+
+    const iso = t.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return iso[0];
+
+    const jma = t.match(/(\d{1,2})\s+([a-z]{3,})\.?\s+(\d{4})/);       // 17 aout 2026
+    if (jma && MOIS[jma[2].slice(0, 3)]) {
+      return jma[3] + '-' + String(MOIS[jma[2].slice(0, 3)]).padStart(2, '0') +
+             '-' + String(jma[1]).padStart(2, '0');
+    }
+
+    const mja = t.match(/([a-z]{3,})\.?\s+(\d{1,2}),?\s+(\d{4})/);     // Aug 17, 2026
+    if (mja && MOIS[mja[1].slice(0, 3)]) {
+      return mja[3] + '-' + String(MOIS[mja[1].slice(0, 3)]).padStart(2, '0') +
+             '-' + String(mja[2]).padStart(2, '0');
+    }
+    return '';
+  }
+
+  // « sem » avant « sec », et « min » avant « m » (mois) : sinon « semaine »
+  // serait lu comme des secondes et « mois » comme des minutes.
+  const UNITES = [
+    [/^sem|^week/, (d, n) => d.setDate(d.getDate() - n * 7)],
+    [/^min/, (d, n) => d.setMinutes(d.getMinutes() - n)],
+    [/^sec|^s$/, (d, n) => d.setSeconds(d.getSeconds() - n)],
+    [/^h$|^heure|^hour|^hr/, (d, n) => d.setHours(d.getHours() - n)],
+    [/^j$|^jour|^day/, (d, n) => d.setDate(d.getDate() - n)],
+    [/^m$|^mois|^month/, (d, n) => d.setMonth(d.getMonth() - n)],
+    [/^an|^a$|^year|^yr/, (d, n) => d.setFullYear(d.getFullYear() - n)]
+  ];
+
+  /**
+   * « il y a 9 mois » -> date d'aujourd'hui moins 9 mois.
+   *
+   * Approximatif par nature, mais une date relative pourrit : « il y a 9 mois »
+   * designera autre chose dans trois mois. Mieux vaut une date figee, meme
+   * approchee, dans un fichier destine a etre conserve.
+   */
+  function relativeEnIso(texte) {
+    const t = sansAccents(texte);
+    const m = t.match(/(\d+)\s*([a-z]+)/);
+    if (!m) return '';
+    const n = Number(m[1]);
+    const d = new Date();
+    for (const [re, applique] of UNITES) {
+      if (re.test(m[2])) { applique(d, n); return isoDe(d); }
+    }
+    return '';
+  }
+
+  /**
+   * La date exacte est dans les microdonnees schema.org de la page — donc dans
+   * le HTML, sans aucune requete. Apres une navigation interne ce bloc peut
+   * rester celui de la video precedente : on ne s'en sert que si une de ses URL
+   * porte bien l'identifiant courant.
+   */
+  function dateMicrodonnees(id) {
+    const meta = document.querySelector(
+      'meta[itemprop="datePublished"], meta[itemprop="uploadDate"]'
+    );
+    const contenu = meta ? meta.getAttribute('content') || '' : '';
+    if (!/^\d{4}-\d{2}-\d{2}/.test(contenu)) return '';
+
+    if (!id) return '';
+    const ref = document.querySelector('link[itemprop="thumbnailUrl"], link[itemprop="embedUrl"]');
+    const href = ref ? ref.getAttribute('href') || '' : '';
+    if (!href || !href.includes(id)) return '';      // rien pour verifier : on s'abstient
+
+    return contenu.slice(0, 10);
+  }
 
   function videoMeta() {
     const id = new URLSearchParams(location.search).get('v') || '';
@@ -430,6 +483,7 @@
       vues,
       vues_num: vues ? TV.parseCount(vues) : '',
       date,
+      date_iso: dateMicrodonnees(id) || absolueEnIso(date) || relativeEnIso(date),
       duree: pickText(['.ytp-time-duration']),
       url: id ? 'https://www.youtube.com/watch?v=' + id : location.href,
       id
@@ -437,7 +491,7 @@
   }
 
   const COLUMNS = ['titre', 'chaine', 'debut', 'fin', 'debut_s', 'texte',
-                   'date', 'vues', 'vues_num', 'duree', 'url', 'id'];
+                   'date', 'date_iso', 'vues', 'vues_num', 'duree', 'url', 'id'];
 
   function toCsv(rows) {
     const meta = videoMeta();
@@ -511,9 +565,6 @@
 
     let rows = null;
     try { rows = await fromPanel(); } catch (e) { console.warn('[YouTube Tools] panneau', e); }
-    if (!rows) {
-      try { rows = await fromApi(); } catch (e) { console.warn('[YouTube Tools] api', e); }
-    }
 
     if (!rows || !rows.length) {
       console.warn('[YouTube Tools] transcription introuvable', diagnose());
