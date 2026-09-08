@@ -101,6 +101,19 @@
     return Math.round(value * mult);
   }
 
+  /**
+   * « 22:00 » -> 1320, « 1:00:44 » -> 3644.
+   *
+   * Une duree en texte ne se trie pas et ne se calcule pas : sans cette colonne
+   * en secondes, impossible de comparer des densites (mots par minute, paliers
+   * par minute) entre videos.
+   */
+  function parseDuration(text) {
+    const t = String(text).trim();
+    if (!RE.duration.test(t)) return '';
+    return t.split(':').reduce((acc, p) => acc * 60 + Number(p), 0);
+  }
+
   /* ------------------------------------------------------------- remise */
 
   async function copyText(text) {
@@ -241,5 +254,5 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, RE, parseCount, slug, stamp };
+  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, RE, parseCount, parseDuration, slug, stamp };
 })();

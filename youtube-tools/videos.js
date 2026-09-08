@@ -219,6 +219,8 @@
       vues_num: vues ? TV.parseCount(vues) : '',
       date,
       duree: DURATION_RE.test(duree) ? duree : '',
+      // En secondes : une duree en texte ne se trie ni ne se calcule.
+      duree_s: TV.parseDuration(duree),
       multiplicateur: multiplicateur.replace(/\s+/g, ''),
       type,
       id,
@@ -244,7 +246,7 @@
 
   /* --------------------------------------------------------------------- CSV */
 
-  const COLUMNS = ['position', 'titre', 'chaine', 'vues', 'vues_num', 'date', 'duree', 'multiplicateur', 'type', 'url'];
+  const COLUMNS = ['position', 'titre', 'chaine', 'vues', 'vues_num', 'date', 'duree', 'duree_s', 'multiplicateur', 'type', 'url'];
   const cell = (v) => '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"';
 
   function toCsv(rows) {

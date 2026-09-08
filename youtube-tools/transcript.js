@@ -497,6 +497,7 @@
     }
 
     const micro = microdonnees(id);
+    const duree = pickText(['.ytp-time-duration']);
     let vues = frags.find((t) => TV.RE.views.test(t)) || '';
     let date = frags.find((t) =>
       !TV.RE.views.test(t) && (TV.RE.date.test(t) || ANNEE_RE.test(t))) || '';
@@ -530,19 +531,23 @@
         '#owner a[href^="/@"]'
       ]),
       vues,
-      vues_num: vues ? TV.parseCount(vues) : (micro ? micro.vues : ''),
+      // Le compte exact des microdonnees PASSE AVANT le texte affiche : « 3,5 M
+      // de vues » ne vaut que 3 500 000 arrondi, a +/- 50 000 pres.
+      vues_num: (micro && micro.vues !== '') ? micro.vues
+                : (vues ? TV.parseCount(vues) : ''),
       date,
       date_iso: (micro && micro.date) || absolueEnIso(date) || relativeEnIso(date),
       // Le bloc microdata donne le compte exact ; le bouton n'est qu'un repli.
       likes: (micro && micro.likes !== '') ? micro.likes : likesDuBouton(),
-      duree: pickText(['.ytp-time-duration']),
+      duree: duree,
+      duree_s: TV.parseDuration(duree),
       url: id ? 'https://www.youtube.com/watch?v=' + id : location.href,
       id
     };
   }
 
   const COLUMNS = ['titre', 'chaine', 'debut', 'fin', 'debut_s', 'texte',
-                   'date', 'date_iso', 'vues', 'vues_num', 'likes', 'duree', 'url', 'id'];
+                   'date', 'date_iso', 'vues', 'vues_num', 'likes', 'duree', 'duree_s', 'url', 'id'];
 
   function toCsv(rows) {
     const meta = videoMeta();

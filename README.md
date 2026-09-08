@@ -67,8 +67,8 @@ L'aperçu est **volontairement éphémère** : il n'apparaît qu'au clic, unique
 Sur chaque page de lecture, un petit bouton **☰** est ajouté juste à droite du bouton J'aime. Un clic copie toute la transcription dans le presse-papiers — ou l'enregistre en fichier si le réglage le demande — prête à être collée dans un agent IA :
 
 ```csv
-titre,chaine,debut,fin,debut_s,texte,date,date_iso,vues,vues_num,likes,duree,url,id
-"Je joue à HIGHSCHOOL SIMULATOR..","Caylus","0:00","0:05","0","Première phrase","17 août 2026","2026-08-17","1 659 225 vues","1659225","21816","1:00:44","https://www.youtube.com/watch?v=lZGoJT4abos","lZGoJT4abos"
+titre,chaine,debut,fin,debut_s,texte,date,date_iso,vues,vues_num,likes,duree,duree_s,url,id
+"Je joue à HIGHSCHOOL SIMULATOR..","Caylus","0:00","0:05","0","Première phrase","17 août 2026","2026-08-17","1 659 225 vues","1659225","21816","1:00:44","3644","https://www.youtube.com/watch?v=lZGoJT4abos","lZGoJT4abos"
 ```
 
 - les métadonnées de la vidéo — titre, chaîne, vues, date, durée, URL, ID — sont **répétées sur chaque ligne** : on peut ainsi concaténer plusieurs transcriptions dans un même fichier sans perdre de quelle vidéo vient chaque ligne
@@ -77,7 +77,8 @@ titre,chaine,debut,fin,debut_s,texte,date,date_iso,vues,vues_num,likes,duree,url
 - `vues` reprend le **compte exact** affiché sous la vidéo (`1 659 225 vues`), pas l'arrondi ; `vues_num` le convertit en nombre
 - `date` garde ce qu'affiche la page ; **`date_iso` est toujours une date absolue** — une date relative pourrit, « il y a 9 mois » désignera autre chose dans trois mois
 - le **texte est nettoyé** du libellé que YouTube destine aux lecteurs d'écran : sans ça chaque ligne commençait par « 0 seconde », collé au sous-titre
-- `vues` et `likes` sont les comptes **exacts** (`1 659 225`, `21816`), pas les arrondis affichés sur les boutons
+- `vues_num` et `likes` viennent du compte **exact** des microdonnées quand il est disponible. À défaut, `vues_num` retombe sur l'arrondi affiché : « 3,5 M de vues » donne `3500000`, soit ±50 000 — la colonne `vues` permet de savoir dans quel cas on est
+- `duree_s` donne la durée en secondes (`1320`), pour trier et calculer des densités : une durée en texte ne se compare pas
 - champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien
 
 Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidéo n'a pas de transcription. En cas d'échec, un diagnostic part dans la console (`[YouTube Tools] transcription introuvable`).
@@ -89,12 +90,13 @@ Un bouton **⤓** est ajouté dans la barre du haut, **juste à gauche de « Cr�
 Il copie dans le presse-papiers toutes les vidéos **actuellement chargées** :
 
 ```csv
-position,titre,chaine,vues,vues_num,date,duree,multiplicateur,type,url
-"1","KEYBOARD ESCAPE MAIS TU PEUX GLISSER !!","Kevko Gaming","149 k vues","149000","il y a 16 heures","18:48","1.4x","video","https://www.youtube.com/watch?v=TnTr_PEicOI"
+position,titre,chaine,vues,vues_num,date,duree,duree_s,multiplicateur,type,url
+"1","KEYBOARD ESCAPE MAIS TU PEUX GLISSER !!","Kevko Gaming","149 k vues","149000","il y a 16 heures","18:48","1128","1.4x","video","https://www.youtube.com/watch?v=TnTr_PEicOI"
 ```
 
 - `position` : l'ordre d'apparition sur la page — de quoi analyser un classement de recherche
-- `vues` garde le texte affiché, `vues_num` le convertit en nombre (`1,2 M de vues` → `1200000`) pour trier et calculer
+- `vues` garde le texte affiché, `vues_num` le convertit en nombre (`1,2 M de vues` → `1200000`) pour trier et calculer — **arrondi**, les cartes d'une page n'affichent jamais le compte exact
+- `duree_s` donne la durée en secondes, pour trier et calculer
 - `multiplicateur` reprend le `1.4x` de **vidIQ** quand l'extension est installée, sinon la colonne reste vide
 - `type` vaut `video`, `short` ou `playlist` — un Short n'a ni chaîne ni durée affichées, une playlist n'a pas de vues
 - en mode fichier, le CSV commence par un BOM UTF-8 pour qu'Excel n'écrase pas les accents
