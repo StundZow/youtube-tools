@@ -58,6 +58,49 @@
     });
   } catch { /* contexte d'extension indisponible : on garde les valeurs par defaut */ }
 
+  /* ------------------------------------------------- reconnaissance de texte */
+
+  /**
+   * YouTube n'etiquette pas ses metadonnees : on les reconnait a ce qu'elles
+   * *disent*. Ces motifs servent aussi bien a l'export des videos d'une page
+   * qu'aux metadonnees d'une transcription — une seule definition, donc aucun
+   * risque qu'elles divergent.
+   */
+  const RE = {
+    // « 379 k vues », « 124 vues », mais aussi « 1,2 M de vues » : au-dela du
+    // million, le francais intercale un « de ». Suffixes longs avant les courts,
+    // sinon « Md » serait lu comme « M ».
+    views: /\d[\d\s\u00a0\u202f.,]*\s*(?:mrd|md|k|m|b)?\s*(?:de\s+)?(?:vues?|views?|visualizzazioni|aufrufe)/i,
+    date: /il y a |\bago\b|hier|aujourd|diffus|streamed|premiere|en direct|\blive\b/i,
+    duration: /^\d{1,3}(?::[0-5]\d){1,2}$/,
+    // Les cartes compactes ecrivent les vues sans le mot : « 1 M », « 272 k ».
+    bareCount: /^\d[\d\s.,]*\s*(?:mrd|md|k|m|b)?$/i,
+    multiplier: /^\d+(?:[.,]\d+)?\s*x$/i
+  };
+
+  /**
+   * « 379 k vues » -> 379000, « 1,2 M de vues » -> 1200000, « 12 345 vues » -> 12345.
+   * Gere la virgule decimale francaise comme le point anglais.
+   */
+  function parseCount(text) {
+    const m = String(text).match(/(\d[\d\s\u00a0\u202f.,]*)\s*(mrd|md|k|m|b)?/i);
+    if (!m) return '';
+
+    let num = m[1].replace(/[\s\u00a0\u202f]/g, '').replace(/[.,]$/, '');
+    if (num.includes(',') && num.includes('.')) {
+      num = num.replace(/\./g, '').replace(',', '.');          // 1.234,5
+    } else if (/^\d+,\d{1,2}$/.test(num)) {
+      num = num.replace(',', '.');                             // 1,2
+    } else {
+      num = num.replace(/,/g, '');                             // 1,234
+    }
+
+    const value = parseFloat(num);
+    if (!Number.isFinite(value)) return '';
+    const mult = { k: 1e3, m: 1e6, md: 1e9, mrd: 1e9, b: 1e9 }[(m[2] || '').toLowerCase()] || 1;
+    return Math.round(value * mult);
+  }
+
   /* ------------------------------------------------------------- remise */
 
   async function copyText(text) {
@@ -198,5 +241,5 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, slug, stamp };
+  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, RE, parseCount, slug, stamp };
 })();

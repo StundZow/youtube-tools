@@ -25,15 +25,10 @@
 
   const BTN_ID = 'yttools-videos-btn';
 
-  // Fourni par common.js, charge avant ce script. Le repli evite qu'un ordre de
-  // chargement inattendu casse la page.
-  const TV = window.__yttools || {
-    settings: { get: () => ({ videosButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
-    deliver: async () => ({ ok: false, copied: false, file: false }),
-    keepMounted: ({ place }) => setTimeout(place, 900),
-    slug: (v, f) => f,
-    stamp: () => ''
-  };
+  // Fourni par common.js, charge avant ce script dans le manifest. Sans lui rien
+  // ne peut fonctionner : mieux vaut renoncer franchement qu'a moitie.
+  const TV = window.__yttools;
+  if (!TV) { console.warn('[YouTube Tools] common.js absent'); return; }
 
   /* ------------------------------------------------------ reperage des cartes */
 
@@ -71,16 +66,10 @@
   const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
   const textOf = (el) => (el ? clean(el.textContent) : '');
 
-  const DURATION_RE = /^\d{1,3}(?::[0-5]\d){1,2}$/;
-  const MULTIPLIER_RE = /^\d+(?:[.,]\d+)?\s*x$/i;
-  // \u00ab 379 k vues \u00bb, \u00ab 124 vues \u00bb, mais aussi \u00ab 1,2 M de vues \u00bb : au-dela du
-  // million, le francais intercale un \u00ab de \u00bb. Les suffixes longs passent avant
-  // les courts, sinon \u00ab Md \u00bb serait lu comme \u00ab M \u00bb.
-  const VIEWS_RE =
-    /\d[\d\s\u00a0\u202f.,]*\s*(?:mrd|md|k|m|b)?\s*(?:de\s+)?(?:vues?|views?|visualizzazioni|aufrufe)/i;
-  const DATE_RE = /il y a |\bago\b|hier|aujourd|diffus|streamed|premiere|en direct|\blive\b/i;
-  // Les cartes compactes ecrivent les vues sans le mot : « 1 M », « 272 k ».
-  const BARE_COUNT_RE = /^\d[\d\s.,]*\s*(?:mrd|md|k|m|b)?$/i;
+  // Motifs partages avec common.js : une seule definition de « a quoi
+  // ressemble un compteur de vues », donc aucune derive possible.
+  const { duration: DURATION_RE, multiplier: MULTIPLIER_RE, views: VIEWS_RE,
+          date: DATE_RE, bareCount: BARE_COUNT_RE } = TV.RE;
 
   /**
    * YouTube agrege parfois plusieurs informations dans un seul fragment
@@ -172,30 +161,6 @@
     };
   }
 
-  /**
-   * « 379 k vues » -> 379000, « 1,2 M vues » -> 1200000, « 12 345 vues » -> 12345.
-   * Gere la virgule decimale francaise comme le point anglais.
-   */
-  function parseCount(text) {
-    // Suffixes longs d'abord : sinon \u00ab Md \u00bb serait lu comme \u00ab M \u00bb (facteur 1000).
-    const m = String(text).match(/(\d[\d\s\u00a0\u202f.,]*)\s*(mrd|md|k|m|b)?/i);
-    if (!m) return '';
-
-    let num = m[1].replace(/[\s\u00a0\u202f]/g, '').replace(/[.,]$/, '');
-    if (num.includes(',') && num.includes('.')) {
-      num = num.replace(/\./g, '').replace(',', '.');          // 1.234,5
-    } else if (/^\d+,\d{1,2}$/.test(num)) {
-      num = num.replace(',', '.');                             // 1,2
-    } else {
-      num = num.replace(/,/g, '');                             // 1,234
-    }
-
-    const value = parseFloat(num);
-    if (!Number.isFinite(value)) return '';
-    const mult = { k: 1e3, m: 1e6, md: 1e9, mrd: 1e9, b: 1e9 }[(m[2] || '').toLowerCase()] || 1;
-    return Math.round(value * mult);
-  }
-
   function readCard(card) {
     const { text: titre, node: titleNode } = titleOf(card);
     const { url, id, type } = linkOf(card);
@@ -251,7 +216,7 @@
       titre,
       chaine,
       vues,
-      vues_num: vues ? parseCount(vues) : '',
+      vues_num: vues ? TV.parseCount(vues) : '',
       date,
       duree: DURATION_RE.test(duree) ? duree : '',
       multiplicateur: multiplicateur.replace(/\s+/g, ''),

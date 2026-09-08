@@ -22,15 +22,10 @@
 
   const BTN_ID = 'yttools-transcript-btn';
 
-  // Fourni par common.js, charge avant ce script. Le repli evite qu'un ordre de
-  // chargement inattendu casse la page.
-  const TV = window.__yttools || {
-    settings: { get: () => ({ transcriptButton: true, saveAsFile: false }), onChange: () => {}, ready: Promise.resolve() },
-    deliver: async () => ({ ok: false, copied: false, file: false }),
-    keepMounted: ({ place }) => setTimeout(place, 900),
-    slug: (v, f) => f,
-    stamp: () => ''
-  };
+  // Fourni par common.js, charge avant ce script dans le manifest. Sans lui rien
+  // ne peut fonctionner : mieux vaut renoncer franchement qu'a moitie.
+  const TV = window.__yttools;
+  if (!TV) { console.warn('[YouTube Tools] common.js absent'); return; }
   const MARK = 'data-yttools-ts';
   const TS_RE = /^\d{1,3}(?::[0-5]\d){1,2}$/;
 
@@ -345,13 +340,73 @@
 
   /* -------------------------------------------------------------------- CSV */
 
-  const cell = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+  const cell = (v) => '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"';
+
+  const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+
+  /** Le premier selecteur qui donne du texte. */
+  function pickText(selectors) {
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      if (!el) continue;
+      const v = clean(el.getAttribute('title') || el.textContent);
+      if (v) return v;
+    }
+    return '';
+  }
+
+  /**
+   * Metadonnees de la video, lues une seule fois puis repetees sur chaque ligne
+   * — c'est ce qui permet de concatener plusieurs transcriptions dans un meme
+   * fichier sans perdre de quelle video vient chaque ligne.
+   */
+  function videoMeta() {
+    const id = new URLSearchParams(location.search).get('v') || '';
+
+    // Vues et date vivent dans la meme zone, sans etiquette : on les distingue
+    // par ce qu'elles disent, avec les motifs partages de common.js.
+    const zone = document.querySelector('ytd-watch-info-text, #info-container, #info');
+    const frags = zone
+      ? [...zone.querySelectorAll('span, yt-formatted-string, yt-attributed-string')]
+          .map((n) => clean(n.textContent)).filter(Boolean)
+      : [];
+    const vues = frags.find((t) => TV.RE.views.test(t)) || '';
+    const date = frags.find((t) => TV.RE.date.test(t)) || '';
+
+    return {
+      titre: pickText(['ytd-watch-metadata h1 yt-formatted-string', 'ytd-watch-metadata h1', '#title h1']),
+      chaine: pickText([
+        '#owner ytd-channel-name #text a',
+        '#owner ytd-channel-name #text',
+        'ytd-video-owner-renderer ytd-channel-name #text',
+        '#owner a[href^="/@"]'
+      ]),
+      vues,
+      vues_num: vues ? TV.parseCount(vues) : '',
+      date,
+      duree: pickText(['.ytp-time-duration']),
+      url: id ? 'https://www.youtube.com/watch?v=' + id : location.href,
+      id
+    };
+  }
+
+  const COLUMNS = ['titre', 'chaine', 'debut', 'fin', 'debut_s', 'texte',
+                   'date', 'vues', 'vues_num', 'duree', 'url', 'id'];
 
   function toCsv(rows) {
+    const meta = videoMeta();
     const withHours = rows[rows.length - 1].start >= 3600;
-    const lines = ['start,end,text'];
+    const lines = [COLUMNS.join(',')];
+
     for (const r of rows) {
-      lines.push([fmt(r.start, withHours), fmt(r.end, withHours), r.text].map(cell).join(','));
+      const ligne = {
+        ...meta,
+        debut: fmt(r.start, withHours),
+        fin: fmt(r.end, withHours),
+        debut_s: Math.round(r.start * 100) / 100,
+        texte: r.text
+      };
+      lines.push(COLUMNS.map((c) => cell(ligne[c])).join(','));
     }
     return lines.join('\r\n');
   }
