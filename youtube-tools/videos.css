@@ -67,3 +67,27 @@
 #yttools-videos-btn[data-state="ko"] {
   color: #f03;
 }
+
+/* ---------- thème sombre ----------
+   Les jetons --yt-spec-* ne sont pas toujours définis par YouTube. Quand ils le
+   sont ils gagnent et le bouton colle exactement à l'interface ; sinon ces
+   valeurs de repli prennent le relais — c'est leur version claire, appliquée en
+   thème sombre, qui rendait le bouton noir sur fond noir.
+   `data-theme` est posé par le script, qui mesure le fond réel de la page. */
+#yttools-videos-btn[data-theme="dark"] {
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, .1));
+  color: var(--yt-spec-text-primary, #f1f1f1);
+}
+
+#yttools-videos-btn[data-theme="dark"]:hover {
+  background: var(--yt-spec-10-percent-layer, rgba(255, 255, 255, .2));
+}
+
+#yttools-videos-btn[data-theme="dark"][data-state="ok"] { color: #5ddc7a; }
+#yttools-videos-btn[data-theme="dark"][data-state="ko"] { color: #ff7a7a; }
+
+/* Filet de sécurité si le script n'a pas encore mesuré : l'indice de YouTube. */
+html[dark] #yttools-videos-btn:not([data-theme]) {
+  background: rgba(255, 255, 255, .1);
+  color: #f1f1f1;
+}

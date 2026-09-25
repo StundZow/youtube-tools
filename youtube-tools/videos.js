@@ -340,6 +340,7 @@
 
   /** Le reglage « enregistrer un fichier » a pu changer depuis l'injection. */
   function refresh(el) {
+    TV.applyTheme(el);            // YouTube peut basculer clair/sombre a tout moment
     const h = hint();
     if (el.title === h) return;
     el.title = h;

@@ -164,6 +164,14 @@ Points à connaître, tous mis au jour en faisant tourner l'extracteur sur une v
 - le premier badge d'un Short est « Nouveau », pas une durée ;
 - la fausse carte de l'aperçu de miniature est explicitement exclue de l'export.
 
+### Suivre le thème de YouTube
+
+Les jetons `--yt-spec-*` de YouTube ne sont **pas toujours définis**. Les boutons s'appuyaient dessus avec des couleurs de repli écrites pour le thème clair : en thème sombre, ils devenaient noirs sur fond noir.
+
+Le thème est désormais **mesuré**, pas deviné. On remonte depuis le bouton jusqu'au premier ancêtre au fond opaque et on calcule sa luminance perceptuelle. Si tout est transparent, on retombe sur l'attribut `dark` de YouTube, puis sur celui du système. Le résultat est posé en `data-theme` sur le bouton, et la feuille de style fait le reste.
+
+Mesurer plutôt que lire un indice, parce qu'un attribut peut être renommé alors qu'un fond reste un fond. La bascule est prise en compte **sans recharger l'onglet**.
+
 ### Garder un bouton posé
 
 YouTube reconstruit ses rangées d'actions en permanence, et un bouton injecté part avec elles. Les deux boutons partagent donc un même mécanisme de maintien (`keepMounted` dans `common.js`), avec deux garde-fous qui bouchent chacun le trou de l'autre :

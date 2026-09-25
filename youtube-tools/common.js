@@ -169,6 +169,51 @@
     return { ok: copied || file, copied, file };
   }
 
+  /* ------------------------------------------------------------------ theme */
+
+  /** « rgb(15, 15, 15) » -> true : la couleur est-elle sombre ? */
+  function couleurSombre(css) {
+    const n = String(css || '').match(/[\d.]+/g);
+    if (!n || n.length < 3) return null;
+    if (n.length > 3 && Number(n[3]) < 0.5) return null;      // quasi transparent
+    // Luminance perceptuelle : l'oeil ne pondere pas les canaux egalement.
+    return (0.299 * Number(n[0]) + 0.587 * Number(n[1]) + 0.114 * Number(n[2])) < 128;
+  }
+
+  /**
+   * YouTube est-il en theme sombre, derriere cet element ?
+   *
+   * On MESURE le fond plutot que de se fier a un indice. Les jetons
+   * --yt-spec-* ne sont pas toujours definis : leur repli, ecrit pour le theme
+   * clair, rendait le bouton noir sur fond noir. Et l'attribut `dark` de
+   * YouTube n'est pas garanti dans le temps.
+   *
+   * On remonte donc jusqu'au premier ancetre au fond opaque. Si tout est
+   * transparent, on retombe sur l'indice de YouTube, puis sur celui du systeme.
+   */
+  function isDark(depuis) {
+    let el = depuis || document.body;
+    for (let i = 0; i < 12 && el; i++) {
+      const sombre = couleurSombre(getComputedStyle(el).backgroundColor);
+      if (sombre !== null) return sombre;
+      el = el.parentElement;
+    }
+
+    const racine = document.documentElement;
+    if (racine.hasAttribute('dark') || racine.getAttribute('data-theme') === 'dark') return true;
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Pose data-theme sur le bouton ; la feuille de style fait le reste. */
+  function applyTheme(el) {
+    const voulu = isDark(el.parentElement) ? 'dark' : 'light';
+    if (el.dataset.theme !== voulu) el.dataset.theme = voulu;
+  }
+
   /* --------------------------------------------- maintien d'un bouton pose */
 
   /**
@@ -211,7 +256,11 @@
 
       try { place(); } catch { /* la rangee n'est pas encore prete */ }
 
-      if (vivant()) { essais = 0; return; }
+      // Le bouton doit etre dans le DOM pour que son theme soit mesurable : on
+      // le rafraichit des la pose, sinon il clignoterait aux couleurs du theme
+      // clair jusqu'au passage suivant.
+      const pose = vivant();
+      if (pose) { if (refresh) refresh(pose); essais = 0; return; }
       if (essais < 40) {
         essais++;
         planifie(Math.min(2000, 150 + essais * 100));
@@ -254,5 +303,5 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, RE, parseCount, parseDuration, slug, stamp };
+  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, applyTheme, isDark, RE, parseCount, parseDuration, slug, stamp };
 })();
