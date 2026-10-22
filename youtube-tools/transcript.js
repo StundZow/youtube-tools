@@ -230,25 +230,68 @@
     return document.querySelector(PANEL_SELECTORS[0]) || document.querySelector(PANEL_SELECTORS[1]);
   }
 
-  /** Le bouton « Afficher la transcription », quelle que soit la langue. */
-  function findTrigger() {
-    const section = document.querySelector('ytd-video-description-transcript-section-renderer');
-    if (section) {
-      const buttons = [...section.querySelectorAll('button, a[role="button"]')];
-      if (buttons.length) return buttons[buttons.length - 1];
-    }
-    const scope = document.querySelectorAll(
-      '#structured-description button, #description button, ytd-watch-metadata button'
-    );
-    for (const b of scope) {
+  // Plusieurs boutons de la page parlent de transcription, et ils ne font pas la
+  // meme chose. « Afficher la transcription » ouvre le panneau ; « Copier la
+  // transcription », ajoute par une autre extension (Better YouTube Studio),
+  // ouvre un menu deroulant. Les deux contiennent « transcri » : c'est le VERBE
+  // qui les separe.
+  const VERBE_OUVRE = /afficher|montrer|voir|show|view|open|display|anzeigen|mostrar|mostra/i;
+  const VERBE_COPIE = /copier|copy|kopieren|copiar|telecharger|download|export|enregistrer|save/i;
+
+  /**
+   * Les declencheurs possibles, du plus probable au moins probable.
+   *
+   * On prend une liste et non le premier venu : si un clic n'ouvre pas le
+   * panneau, on peut essayer le suivant au lieu d'abandonner.
+   */
+  function findTriggers() {
+    const vus = new Set();
+    const candidats = [];
+
+    const ajoute = (el, bonus) => {
+      if (!el || vus.has(el)) return;
+      vus.add(el);
+
       // Notre propre bouton vit dans ytd-watch-metadata et son libelle contient
       // « transcription » : sans ce garde-fou, il se cliquerait lui-meme.
-      if (b.id === BTN_ID || b.closest('#' + BTN_ID)) continue;
-      const label = b.getAttribute('aria-label') || b.textContent || '';
-      if (/transcri/i.test(label)) return b;
+      if (el.id === BTN_ID || el.closest('#' + BTN_ID)) return;
+
+      const label = clean(el.getAttribute('aria-label') || el.textContent || '');
+      if (!/transcri|transkri/i.test(label)) return;
+
+      // Jamais un bouton « copier » : il ouvre un menu, pas le panneau.
+      if (VERBE_COPIE.test(label)) return;
+
+      let score = bonus;
+      if (VERBE_OUVRE.test(label)) score += 3;
+      // Un composant YouTube plutot qu'un bouton injecte par une extension.
+      if (el.closest('yt-button-shape, ytd-button-renderer')) score += 2;
+      candidats.push({ el, score });
+    };
+
+    const section = document.querySelector('ytd-video-description-transcript-section-renderer');
+    if (section) section.querySelectorAll('button, a[role="button"]').forEach((b) => ajoute(b, 2));
+
+    document.querySelectorAll(
+      '#structured-description button, #structured-description a[role="button"],' +
+      '#description button, ytd-watch-metadata button'
+    ).forEach((b) => ajoute(b, 0));
+
+    candidats.sort((a, b) => b.score - a.score);
+    const liste = candidats.map((c) => c.el);
+
+    // Dernier recours : une langue ou le mot ne commence pas par « transcri ».
+    // On reprend alors les boutons de la section, sauf ceux qui disent « copier ».
+    if (!liste.length && section) {
+      for (const b of section.querySelectorAll('button, a[role="button"]')) {
+        const label = clean(b.getAttribute('aria-label') || b.textContent || '');
+        if (!VERBE_COPIE.test(label) && b.id !== BTN_ID) liste.push(b);
+      }
     }
-    return null;
+    return liste;
   }
+
+  const findTrigger = () => findTriggers()[0] || null;
 
   function descExpander(which) {
     return document.querySelector(
@@ -266,28 +309,44 @@
     }
 
     let expandedDesc = false;
-    let trigger = findTrigger();
-    if (!trigger) {
+    let triggers = findTriggers();
+    if (!triggers.length) {
       const expand = descExpander('expand');
       if (expand) {
         expand.click();
         expandedDesc = true;
-        trigger = await waitFor(findTrigger, 3000);
+        await waitFor(() => findTriggers().length, 3000);
+        triggers = findTriggers();
       }
     }
-    if (!trigger) {
+    if (!triggers.length) {
       if (expandedDesc) descExpander('collapse')?.click();
       return null;
     }
-
-    trigger.click();
 
     const restore = () => {
       panelShell()?.querySelector('#visibility-button button')?.click();
       if (expandedDesc) descExpander('collapse')?.click();
     };
 
-    const panel = await waitFor(findPanel, 9000, 150);
+    // Un clic peut ouvrir un menu au lieu du panneau (bouton d'une autre
+    // extension passe au travers du tri) : on essaie le candidat suivant plutot
+    // que d'abandonner. Echap referme le menu reste ouvert.
+    let panel = null;
+    const essais = triggers.slice(0, 3);
+    for (let i = 0; i < essais.length; i++) {
+      essais[i].click();
+      // Le premier candidat merite de la patience : YouTube peut mettre
+      // plusieurs secondes a monter le panneau. Passe ce delai, la page a
+      // prouve qu'elle repond, donc on n'attend plus autant par candidat.
+      panel = await waitFor(findPanel, i === 0 ? 6000 : 2500, 150);
+      if (panel) break;
+      document.activeElement?.blur?.();
+      document.body.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+      );
+      await sleep(150);
+    }
     if (!panel) { restore(); return null; }
 
     // Le panneau se remplit progressivement : on attend que le compte se fige.

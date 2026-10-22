@@ -164,6 +164,14 @@ Points à connaître, tous mis au jour en faisant tourner l'extracteur sur une v
 - le premier badge d'un Short est « Nouveau », pas une durée ;
 - la fausse carte de l'aperçu de miniature est explicitement exclue de l'export.
 
+### Cohabiter avec d'autres extensions
+
+Plusieurs boutons de la page parlent de transcription et ne font pas la même chose. Better YouTube Studio, par exemple, ajoute son propre **« Copier la transcription »** juste à côté du **« Afficher la transcription »** de YouTube — et il ouvre un menu déroulant, pas le panneau.
+
+Les deux libellés contiennent « transcri » : c'est le **verbe** qui les sépare. Un bouton qui dit « copier », « télécharger » ou « enregistrer » n'est jamais cliqué ; un bouton qui dit « afficher », « voir » ou « show » est préféré, de même qu'un vrai composant YouTube (`yt-button-shape`) face à un bouton injecté.
+
+Et si le meilleur candidat n'ouvre rien, on essaie le suivant plutôt que d'abandonner : un bouton inconnu ne bloque plus toute la chaîne.
+
 ### Suivre le thème de YouTube
 
 Les jetons `--yt-spec-*` de YouTube ne sont **pas toujours définis**. Les boutons s'appuyaient dessus avec des couleurs de repli écrites pour le thème clair : en thème sombre, ils devenaient noirs sur fond noir.
