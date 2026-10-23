@@ -95,8 +95,7 @@
 }
 
 #yttools-rank-card .yttools-rk-sub,
-#yttools-rank-card .yttools-rk-msg,
-#yttools-rank-card .yttools-rk-foot {
+#yttools-rank-card .yttools-rk-msg {
   display: block;
   padding: 0 12px 8px;
   color: var(--yt-spec-text-secondary, #606060);
@@ -148,12 +147,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-#yttools-rank-card .yttools-rk-foot {
-  padding: 8px 12px 0;
-  font-size: 12px;
-  line-height: 16px;
-}
-
 /* ---------- thème sombre ----------
    Même principe que transcript.css : `data-theme` est posé par le script après
    mesure du fond réel ; les jetons --yt-spec-* gagnent quand ils existent. */
@@ -169,7 +162,6 @@
 
 #yttools-rank-card[data-theme="dark"] .yttools-rk-sub,
 #yttools-rank-card[data-theme="dark"] .yttools-rk-msg,
-#yttools-rank-card[data-theme="dark"] .yttools-rk-foot,
 #yttools-rank-card[data-theme="dark"] .yttools-rk-n {
   color: var(--yt-spec-text-secondary, #aaa);
 }

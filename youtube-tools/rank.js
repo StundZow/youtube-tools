@@ -259,10 +259,6 @@
       list.append(row);
     });
     body.append(list);
-
-    if (r.entries.some((e) => e.estimated)) {
-      body.append(span('yttools-rk-foot', '≈ estimation au même âge, d’après une courbe de croissance type : la moitié des vues arrive en deux jours.'));
-    }
   }
 
   /** Appele a chaque verification de keepMounted : doit rester tres leger. */

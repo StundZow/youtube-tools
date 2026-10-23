@@ -8,6 +8,8 @@ Teste ta miniature, copie une transcription, exporte un feed, situe une vidéo d
 
 [**⬇ Installer l'extension**](#prise-en-main) · Chrome · Edge · Brave · Opera
 
+<img src="screenshots/01_popup.png" width="340" alt="Le popup de YouTube Tools">
+
 </div>
 
 > **Reprise de PrevYou.** Cette extension part de **PrevYou** de BenjaminCode (design BastiUi), **parce que la version publiée ne fonctionne plus** : Chrome a désactivé les extensions Manifest V2, et YouTube a renommé les classes CSS que l'ancien code ciblait. Tout a été recodé de zéro en MV3.
@@ -88,6 +90,10 @@ C'est la **seule** fonction qui interroge YouTube — la liste des vidéos d'une
 | **Classement sur 10** | affiche le panneau — et coupe les seules requêtes de l'extension |
 
 Les changements s'appliquent **immédiatement**, sans recharger l'onglet.
+
+<div align="center">
+<img src="screenshots/02_parametres.png" width="420" alt="La section Paramètres du popup">
+</div>
 
 ## Vie privée
 
