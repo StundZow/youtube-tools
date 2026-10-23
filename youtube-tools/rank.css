@@ -1,0 +1,196 @@
+/* YouTube Tools — panneau « classement sur 10 » de la colonne de droite. */
+
+#yttools-rank-card {
+  box-sizing: border-box;
+  margin: 0 0 12px;
+  border-radius: 12px;
+  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, .05));
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- en-tête */
+
+#yttools-rank-card .yttools-rk-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+  cursor: pointer;
+}
+
+#yttools-rank-card .yttools-rk-toggle:hover {
+  background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, .05));
+}
+
+#yttools-rank-card .yttools-rk-icon,
+#yttools-rank-card .yttools-rk-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+#yttools-rank-card .yttools-rk-icon svg,
+#yttools-rank-card .yttools-rk-chevron svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+#yttools-rank-card .yttools-rk-label {
+  flex: 1;
+  min-width: 0;
+}
+
+#yttools-rank-card .yttools-rk-value {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+#yttools-rank-card .yttools-rk-chevron {
+  transition: transform .15s ease;
+}
+
+/* Enroulé : seul l'en-tête reste, chevron tourné vers la droite. */
+#yttools-rank-card[data-collapsed="true"] .yttools-rk-body { display: none; }
+#yttools-rank-card[data-collapsed="true"] .yttools-rk-chevron { transform: rotate(-90deg); }
+
+/* Couleur selon la place : 1re en or, podium en vert, fond de tableau en rouge. */
+#yttools-rank-card[data-state="first"] .yttools-rk-value,
+#yttools-rank-card[data-state="first"] .yttools-rk-icon { color: #c98a00; }
+#yttools-rank-card[data-state="top"] .yttools-rk-value,
+#yttools-rank-card[data-state="top"] .yttools-rk-icon { color: #2ba640; }
+#yttools-rank-card[data-state="low"] .yttools-rk-value,
+#yttools-rank-card[data-state="low"] .yttools-rk-icon { color: #f03; }
+#yttools-rank-card[data-state="muted"] .yttools-rk-value { opacity: .6; }
+
+#yttools-rank-card[data-state="loading"] .yttools-rk-icon {
+  animation: yttools-rk-pulse 1s ease-in-out infinite;
+}
+
+@keyframes yttools-rk-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+/* ----------------------------------------------------------------- corps */
+
+#yttools-rank-card .yttools-rk-body {
+  padding: 0 0 8px;
+}
+
+#yttools-rank-card .yttools-rk-sub,
+#yttools-rank-card .yttools-rk-msg,
+#yttools-rank-card .yttools-rk-foot {
+  display: block;
+  padding: 0 12px 8px;
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+#yttools-rank-card .yttools-rk-row {
+  display: grid;
+  grid-template-columns: 18px 64px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+#yttools-rank-card a.yttools-rk-row:hover {
+  background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, .05));
+}
+
+#yttools-rank-card .yttools-rk-row.is-current {
+  background: rgba(62, 166, 255, .14);
+  font-weight: 500;
+}
+
+#yttools-rank-card .yttools-rk-n {
+  text-align: right;
+  color: var(--yt-spec-text-secondary, #606060);
+  font-variant-numeric: tabular-nums;
+}
+
+#yttools-rank-card .yttools-rk-row img {
+  width: 64px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: rgba(0, 0, 0, .08);
+}
+
+#yttools-rank-card .yttools-rk-title {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+#yttools-rank-card .yttools-rk-views {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+#yttools-rank-card .yttools-rk-foot {
+  padding: 8px 12px 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* ---------- thème sombre ----------
+   Même principe que transcript.css : `data-theme` est posé par le script après
+   mesure du fond réel ; les jetons --yt-spec-* gagnent quand ils existent. */
+#yttools-rank-card[data-theme="dark"] {
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, .1));
+  color: var(--yt-spec-text-primary, #f1f1f1);
+}
+
+#yttools-rank-card[data-theme="dark"] .yttools-rk-toggle:hover,
+#yttools-rank-card[data-theme="dark"] a.yttools-rk-row:hover {
+  background: var(--yt-spec-10-percent-layer, rgba(255, 255, 255, .08));
+}
+
+#yttools-rank-card[data-theme="dark"] .yttools-rk-sub,
+#yttools-rank-card[data-theme="dark"] .yttools-rk-msg,
+#yttools-rank-card[data-theme="dark"] .yttools-rk-foot,
+#yttools-rank-card[data-theme="dark"] .yttools-rk-n {
+  color: var(--yt-spec-text-secondary, #aaa);
+}
+
+#yttools-rank-card[data-theme="dark"] .yttools-rk-row.is-current {
+  background: rgba(62, 166, 255, .22);
+}
+
+#yttools-rank-card[data-theme="dark"] .yttools-rk-row img {
+  background: rgba(255, 255, 255, .1);
+}
+
+#yttools-rank-card[data-theme="dark"][data-state="first"] .yttools-rk-value,
+#yttools-rank-card[data-theme="dark"][data-state="first"] .yttools-rk-icon { color: #ffc940; }
+#yttools-rank-card[data-theme="dark"][data-state="top"] .yttools-rk-value,
+#yttools-rank-card[data-theme="dark"][data-state="top"] .yttools-rk-icon { color: #5ddc7a; }
+#yttools-rank-card[data-theme="dark"][data-state="low"] .yttools-rk-value,
+#yttools-rank-card[data-theme="dark"][data-state="low"] .yttools-rk-icon { color: #ff7a7a; }
+
+/* Filet de sécurité si le script n'a pas encore mesuré : l'indice de YouTube. */
+html[dark] #yttools-rank-card:not([data-theme]) {
+  background: rgba(255, 255, 255, .1);
+  color: #f1f1f1;
+}

@@ -20,7 +20,8 @@
   const DEFAULTS = {
     transcriptButton: true,   // afficher le bouton de transcription
     videosButton: true,       // afficher le bouton d'export des videos
-    saveAsFile: false         // false = presse-papiers, true = telechargement
+    saveAsFile: false,        // false = presse-papiers, true = telechargement
+    rankBadge: true           // afficher le classement sur 10 (seule fonction qui interroge YouTube)
   };
 
   let current = { ...DEFAULTS };

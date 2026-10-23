@@ -39,6 +39,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 📝 **Copie de la transcription en CSV** — un bouton à côté du J'aime, timecodes de début et de fin inclus
 - 💾 **Export CSV des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
 - 🧬 **Clonage d'une vraie carte** plutôt que du HTML figé — le style et la grille sont toujours ceux du layout courant de YouTube
+- 🏆 **Classement sur 10** — où se situe la vidéo parmi les 10 dernières de sa chaîne, à âge égal
 - ⚙️ **Paramètres** — activer ou désactiver chaque bouton, et choisir entre presse-papiers et fichier
 - 🌗 **Thème clair / sombre** dans le popup
 - 📋 **Glisser-déposer ou coller** la miniature et l'avatar, avec les champs mémorisés d'une fois sur l'autre
@@ -115,6 +116,28 @@ L'horodatage des microdonnées porte le fuseau de publication (`...T15:02:53-07:
 
 Le même bloc fournit **`likes`**, exact lui aussi. À défaut, l'`aria-label` du bouton J'aime le contient en toutes lettres (« comme 17 964 autres personnes »), là où son texte visible ne montre que « 18 k ».
 
+## Classement sur 10
+
+Sur une page de lecture, un panneau se pose dans la colonne de droite, **juste au-dessus des vidéos suggérées**. Il indique la place de la vidéo parmi les 10 dernières de sa chaîne (elle et les 9 publiées juste avant), **à âge égal** : les plus anciennes ayant eu plus de temps pour accumuler des vues, on estime combien chacune en avait au même âge, via une courbe de croissance type (moitié des vues en deux jours). Un clic sur l'en-tête replie ou déroule le détail.
+
+Les Shorts n'affichent pas de date dans la liste d'une chaîne : ils sont comparés sur leurs vues actuelles. Avant 24 h, aucun classement — l'estimation serait trop instable.
+
+Reprise de la fonction du même nom de **Better YouTube Studio** (SQUIDUU), avec le même modèle de calcul pour obtenir les mêmes rangs.
+
+### La seule fonction qui interroge YouTube
+
+Le reste de l'extension n'émet aucune requête. Celle-ci fait exception, parce que la liste des vidéos d'une chaîne n'est pas dans la page. Les garde-fous :
+
+- **aucun cookie** (`credentials: 'omit'`) : rien ne touche à la session, aucun identifiant n'est lu ni envoyé. Ce sont des données publiques, comme pour un visiteur non connecté ;
+- uniquement sur une page de lecture, et seulement si l'interrupteur **Classement sur 10** est actif ;
+- liste gardée **6 h** par chaîne : enchaîner dix vidéos d'une même chaîne ne coûte qu'une poignée de requêtes.
+
+Le mode « exact » de SQUIDUU pour sa propre chaîne, qui signe ses appels avec le cookie de session Google, **n'a pas été repris**. Toutes les chaînes, la tienne comprise, passent par l'estimation.
+
+### Où il se pose
+
+Le repère est le bloc de suggestions de YouTube, et le panneau s'insère juste avant. Viser un élément de YouTube plutôt que les panneaux des autres extensions compte : vidIQ pose ses badges (VPH, multiplicateur) **à l'intérieur** des cartes suggérées, si bien qu'un ancrage cherchant « le dernier bloc contenant du vidIQ » désignait la liste entière — le panneau se retrouvait alors après toutes les suggestions, invisible en bas de colonne.
+
 ## Paramètres
 
 En bas du popup, trois interrupteurs :
@@ -124,6 +147,7 @@ En bas du popup, trois interrupteurs :
 | **Bouton transcription** | affiche ou retire le **☰** à côté du J'aime |
 | **Bouton export vidéos** | affiche ou retire le **⤓** en haut de page |
 | **Enregistrer un fichier** | téléchargement d'un `.csv` **en plus** de la copie |
+| **Classement sur 10** | affiche le panneau de classement — et coupe les seules requêtes de l'extension |
 
 La copie dans le presse-papiers a **toujours** lieu ; le fichier vient en supplément. Le troisième réglage **vaut pour les deux boutons** — ils passent par la même fonction de remise, donc leur comportement ne peut pas diverger.
 
@@ -201,6 +225,11 @@ youtube-tools/
 ├── transcript.css   style du bouton, aligné sur celui de YouTube
 ├── videos.js        bouton « enregistrer » + export CSV des vidéos de la page
 ├── videos.css       style du bouton
+├── rank-core.js     calcul du classement (sans DOM, testable sous Node)
+├── rank-bridge.js   lecture des données de la vidéo (monde de la page)
+├── rank.js          panneau de la colonne de droite
+├── rank.css         style du panneau
+├── tests/           tests du cœur de calcul
 └── icons/           16 / 32 / 48 / 128 px
 ```
 

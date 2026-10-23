@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "YouTube Tools",
-  "version": "3.4.2",
-  "description": "Boîte à outils YouTube : aperçu de miniature dans le vrai feed, copie de transcription et export CSV des vidéos d'une page.",
+  "version": "3.5.1",
+  "description": "Boîte à outils YouTube : aperçu de miniature dans le vrai feed, copie de transcription, export CSV des vidéos d'une page et classement sur 10 de la vidéo regardée.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -27,8 +27,15 @@
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
-      "js": ["common.js", "content.js", "transcript.js", "videos.js"],
-      "css": ["content.css", "transcript.css", "videos.css"],
+      "js": ["common.js", "content.js", "transcript.js", "videos.js", "rank-core.js", "rank.js"],
+      "css": ["content.css", "transcript.css", "videos.css", "rank.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["rank-bridge.js"],
+      "world": "MAIN",
       "run_at": "document_idle",
       "all_frames": false
     }
