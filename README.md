@@ -4,29 +4,19 @@
 
 # YouTube Tools
 
-Boîte à outils YouTube : juge ta **miniature** au milieu des vraies vidéos, copie la **transcription** de n'importe quelle vidéo, et exporte les **vidéos d'une page** — le tout en CSV.
+Teste ta miniature, copie une transcription, exporte un feed, situe une vidéo dans sa chaîne — **sans jamais quitter YouTube**.
 
-Extension **Chrome · Edge · Brave · Opera** · [Installation](#prise-en-main)
+[**⬇ Installer l'extension**](#prise-en-main) · Chrome · Edge · Brave · Opera
 
 </div>
 
-> ### Reprise de PrevYou
->
-> Cette extension est une reprise de **PrevYou** de BenjaminCode (design BastiUi), **parce que la version publiée ne fonctionne plus** : Chrome a désactivé les extensions Manifest V2, et YouTube a renommé les classes CSS que l'ancien code ciblait.
->
-> Tout a donc été recodé de zéro en Manifest V3, avec une approche pensée pour survivre aux prochaines refontes de YouTube — voir [Pourquoi l'ancienne version ne marchait plus](#pourquoi-lancienne-version-ne-marchait-plus).
+> **Reprise de PrevYou.** Cette extension part de **PrevYou** de BenjaminCode (design BastiUi), **parce que la version publiée ne fonctionne plus** : Chrome a désactivé les extensions Manifest V2, et YouTube a renommé les classes CSS que l'ancien code ciblait. Tout a été recodé de zéro en MV3.
 
 ## Ce que ça fait
 
-Trois outils qui répondent au même besoin : sortir de YouTube des informations que l'interface montre mais ne laisse pas récupérer.
+YouTube montre une foule de choses qu'il ne laisse pas récupérer : l'effet réel d'une miniature au milieu des autres, le texte d'une vidéo, les chiffres d'un feed, la place d'une vidéo dans l'historique de sa chaîne. Il faut tout relever à la main, ou renoncer.
 
-### Voir sa miniature comme le public la verra
-
-Une miniature ne se juge pas dans un éditeur d'image : elle se juge à 320 px de large, coincée entre deux vidéos concurrentes, dans un feed qu'on parcourt au pouce.
-
-L'extension injecte ta fausse carte — miniature, titre, chaîne, avatar, durée — **directement dans le vrai feed YouTube**, au milieu des vraies vidéos, à la taille réelle et dans le vrai thème. Tu vois ce que verra ton audience, pas une maquette.
-
-Et parce qu'on finit toujours par vouloir donner une vidéo à mâcher à une IA, un second bouton copie la **transcription complète au format CSV**, timecodes compris.
+YouTube Tools ajoute quatre outils directement dans l'interface. Chacun sort une information que tu voyais déjà, dans une forme exploitable : du **CSV** prêt à coller dans un tableur ou un agent IA, et un aperçu de miniature posé **dans le vrai feed**, au milieu des vraies vidéos.
 
 ## Pourquoi pas juste ouvrir la miniature en grand ?
 
@@ -34,15 +24,13 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 
 ## Fonctionnalités
 
-- 🖼️ **Injection dans le vrai feed** — accueil, abonnements, résultats de recherche, page de chaîne, colonne de suggestions du lecteur
-- 🎲 **Position aléatoire** — place ta carte quelque part dans la grille plutôt qu'en première position, là où la comparaison est honnête
-- 📝 **Copie de la transcription en CSV** — un bouton à côté du J'aime, timecodes de début et de fin inclus
-- 💾 **Export CSV des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
-- 🧬 **Clonage d'une vraie carte** plutôt que du HTML figé — le style et la grille sont toujours ceux du layout courant de YouTube
+- 🖼️ **Aperçu de miniature dans le vrai feed** — accueil, abonnements, recherche, page de chaîne, suggestions du lecteur. Une vraie carte est clonée, donc le rendu suit toujours le layout courant de YouTube
+- 🎲 **Position aléatoire** — place ta carte quelque part dans la grille plutôt qu'en tête, là où la comparaison est honnête
+- 📝 **Transcription en CSV** — un bouton à côté du J'aime, timecodes et métadonnées de la vidéo inclus
+- 💾 **Export des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
 - 🏆 **Classement sur 10** — où se situe la vidéo parmi les 10 dernières de sa chaîne, à âge égal
-- ⚙️ **Paramètres** — activer ou désactiver chaque bouton, et choisir entre presse-papiers et fichier
-- 🌗 **Thème clair / sombre** dans le popup
-- 📋 **Glisser-déposer ou coller** la miniature et l'avatar, avec les champs mémorisés d'une fois sur l'autre
+- 🌗 **Thème clair / sombre** — les boutons mesurent le fond de la page et s'y accordent, sans recharger
+- ⚙️ **Paramètres** — chaque outil s'active ou se coupe depuis le popup
 - 🔒 **Aperçu ponctuel** — rien ne s'affiche tant que tu n'as pas cliqué, et tout disparaît dès que tu navigues
 
 ## Prise en main
@@ -54,187 +42,86 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 
 *(Sur Edge, Brave ou Opera : `edge://extensions`, `brave://extensions`, etc. — la marche à suivre est identique.)*
 
-Ensuite :
+Pour l'aperçu de miniature : clique sur l'icône, renseigne la chaîne, glisse ou colle ta miniature, saisis le titre, puis **Aperçu**. L'onglet YouTube passe au premier plan avec ta carte injectée. **Retirer l'aperçu** l'enlève ; la flèche circulaire remet les champs à zéro.
 
-1. Clique sur l'icône, renseigne le nom de la chaîne, glisse ou colle ta miniature, saisis le titre.
-2. Clique sur l'avatar rond pour la photo de profil de la chaîne.
-3. **Aperçu** → l'onglet YouTube passe au premier plan avec ta carte injectée.
-4. **Retirer l'aperçu** l'enlève tout de suite ; la flèche circulaire remet les champs à zéro.
+## Les quatre outils
 
-L'aperçu est **volontairement éphémère** : il n'apparaît qu'au clic, uniquement sur la page où tu as cliqué, et disparaît dès que tu navigues ou recharges. Tant que tu ne cliques pas, l'extension ne touche à rien — impossible qu'elle remplace une miniature pendant que tu visites d'autres chaînes.
+### Aperçu de miniature
 
-## Copier la transcription (CSV)
+Volontairement **éphémère** : la carte n'apparaît qu'au clic, uniquement sur la page où tu as cliqué, et disparaît dès que tu navigues ou recharges. Tant que tu ne cliques pas, l'extension ne touche à rien.
 
-Sur chaque page de lecture, un petit bouton **☰** est ajouté juste à droite du bouton J'aime. Un clic copie toute la transcription dans le presse-papiers — ou l'enregistre en fichier si le réglage le demande — prête à être collée dans un agent IA :
+### Transcription (bouton ☰, à côté du J'aime)
+
+Copie toute la transcription dans le presse-papiers, métadonnées de la vidéo comprises :
 
 ```csv
 titre,chaine,debut,fin,debut_s,texte,date,date_iso,vues,vues_num,likes,duree,duree_s,url,id
-"Je joue à HIGHSCHOOL SIMULATOR..","Caylus","0:00","0:05","0","Première phrase","17 août 2026","2026-08-17","1 659 225 vues","1659225","21816","1:00:44","3644","https://www.youtube.com/watch?v=lZGoJT4abos","lZGoJT4abos"
+"Ma vidéo","Ma Chaîne","0:00","0:05","0","Première phrase","il y a 3 semaines","2026-08-16","1 659 225 vues","1659225","21816","1:00:44","3644","https://…","lZGoJT4abos"
 ```
 
-- les métadonnées de la vidéo — titre, chaîne, vues, date, durée, URL, ID — sont **répétées sur chaque ligne** : on peut ainsi concaténer plusieurs transcriptions dans un même fichier sans perdre de quelle vidéo vient chaque ligne
-- `debut` / `fin` en `m:ss`, ou `h:mm:ss` si la vidéo dépasse une heure ; `debut_s` donne la même chose en secondes, pour trier et calculer
-- `fin` correspond au début du segment suivant
-- `vues` reprend le **compte exact** affiché sous la vidéo (`1 659 225 vues`), pas l'arrondi ; `vues_num` le convertit en nombre
-- `date` garde ce qu'affiche la page ; **`date_iso` est toujours une date absolue** — une date relative pourrit, « il y a 9 mois » désignera autre chose dans trois mois
-- le **texte est nettoyé** du libellé que YouTube destine aux lecteurs d'écran : sans ça chaque ligne commençait par « 0 seconde », collé au sous-titre
-- `vues_num` et `likes` viennent du compte **exact** des microdonnées quand il est disponible. À défaut, `vues_num` retombe sur l'arrondi affiché : « 3,5 M de vues » donne `3500000`, soit ±50 000 — la colonne `vues` permet de savoir dans quel cas on est
-- `duree_s` donne la durée en secondes (`1320`), pour trier et calculer des densités : une durée en texte ne se compare pas
-- champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien
+`date_iso` est **toujours** une date absolue : une date relative pourrit, « il y a 9 mois » désignera autre chose dans trois mois. `vues_num` et `likes` reprennent les comptes exacts quand la page les donne. `duree_s` permet de trier et de calculer des densités.
 
-Le bouton affiche le nombre de lignes copiées, ou « Introuvable » si la vidéo n'a pas de transcription. En cas d'échec, un diagnostic part dans la console (`[YouTube Tools] transcription introuvable`).
+### Export des vidéos d'une page (bouton ⤓, barre du haut)
 
-## Exporter les vidéos d'une page (CSV)
-
-Un bouton **⤓** est ajouté dans la barre du haut, **juste à gauche de « Créer »**. La barre étant fixe et présente partout, le bouton est disponible sur **toutes les pages YouTube** — accueil, recherche, chaîne, abonnements — et reste visible quand on fait défiler.
-
-Il copie dans le presse-papiers toutes les vidéos **actuellement chargées** :
+Copie toutes les vidéos **actuellement chargées** — rien n'est préchargé, donc déroule autant que tu veux avant de cliquer :
 
 ```csv
 position,titre,chaine,vues,vues_num,date,duree,duree_s,multiplicateur,type,url
-"1","KEYBOARD ESCAPE MAIS TU PEUX GLISSER !!","Kevko Gaming","149 k vues","149000","il y a 16 heures","18:48","1128","1.4x","video","https://www.youtube.com/watch?v=TnTr_PEicOI"
+"1","KEYBOARD ESCAPE…","Kevko Gaming","149 k vues","149000","il y a 16 heures","18:48","1128","1.4x","video","https://…"
 ```
 
-- `position` : l'ordre d'apparition sur la page — de quoi analyser un classement de recherche
-- `vues` garde le texte affiché, `vues_num` le convertit en nombre (`1,2 M de vues` → `1200000`) pour trier et calculer — **arrondi**, les cartes d'une page n'affichent jamais le compte exact
-- `duree_s` donne la durée en secondes, pour trier et calculer
-- `multiplicateur` reprend le `1.4x` de **vidIQ** quand l'extension est installée, sinon la colonne reste vide
-- `type` vaut `video`, `short` ou `playlist` — un Short n'a ni chaîne ni durée affichées, une playlist n'a pas de vues
-- en mode fichier, le CSV commence par un BOM UTF-8 pour qu'Excel n'écrase pas les accents
+`position` donne le rang sur la page. `multiplicateur` reprend le `1.4x` de **vidIQ** si l'extension est installée. `type` vaut `video`, `short` ou `playlist`.
 
-**Rien n'est préchargé** : l'export prend exactement ce que la page a déjà chargé. Trois vidéos affichées donnent trois lignes ; on déroule longuement puis on clique, et tout y est.
+### Classement sur 10 (panneau, colonne de droite)
 
-### D'où vient `date_iso`
+Place de la vidéo parmi les 10 dernières de sa chaîne, **à âge égal** : les plus anciennes ayant eu plus de temps, on estime combien de vues chacune avait au même âge. Reprise de la fonction du même nom de **Better YouTube Studio** (SQUIDUU), avec le même modèle de calcul.
 
-Trois sources, dans l'ordre, **toutes lues dans la page — aucune requête** :
-
-1. les **microdonnées schema.org** de la page (`meta[itemprop="datePublished"]`), qui donnent la date exacte. Après une navigation interne ce bloc peut rester celui de la vidéo précédente : on ne s'en sert que si une de ses URL porte l'identifiant de la vidéo courante ;
-2. la date affichée si elle est déjà absolue (« 17 août 2026»), convertie en ISO ;
-3. sinon la date relative (« il y a 9 mois »), soustraite d'aujourd'hui. Approximatif, mais figé — c'est le but.
-
-L'horodatage des microdonnées porte le fuseau de publication (`...T15:02:53-07:00`) ; il est ramené au fuseau du lecteur, sinon `date_iso` tomberait parfois un jour avant la date affichée par YouTube.
-
-Le même bloc fournit **`likes`**, exact lui aussi. À défaut, l'`aria-label` du bouton J'aime le contient en toutes lettres (« comme 17 964 autres personnes »), là où son texte visible ne montre que « 18 k ».
-
-## Classement sur 10
-
-Sur une page de lecture, un panneau se pose dans la colonne de droite, **juste au-dessus des vidéos suggérées**. Il indique la place de la vidéo parmi les 10 dernières de sa chaîne (elle et les 9 publiées juste avant), **à âge égal** : les plus anciennes ayant eu plus de temps pour accumuler des vues, on estime combien chacune en avait au même âge, via une courbe de croissance type (moitié des vues en deux jours). Un clic sur l'en-tête replie ou déroule le détail.
-
-Les Shorts n'affichent pas de date dans la liste d'une chaîne : ils sont comparés sur leurs vues actuelles. Avant 24 h, aucun classement — l'estimation serait trop instable.
-
-Reprise de la fonction du même nom de **Better YouTube Studio** (SQUIDUU), avec le même modèle de calcul pour obtenir les mêmes rangs.
-
-### La seule fonction qui interroge YouTube
-
-Le reste de l'extension n'émet aucune requête. Celle-ci fait exception, parce que la liste des vidéos d'une chaîne n'est pas dans la page. Les garde-fous :
-
-- **aucun cookie** (`credentials: 'omit'`) : rien ne touche à la session, aucun identifiant n'est lu ni envoyé. Ce sont des données publiques, comme pour un visiteur non connecté ;
-- uniquement sur une page de lecture, et seulement si l'interrupteur **Classement sur 10** est actif ;
-- liste gardée **6 h** par chaîne : enchaîner dix vidéos d'une même chaîne ne coûte qu'une poignée de requêtes.
-
-Le mode « exact » de SQUIDUU pour sa propre chaîne, qui signe ses appels avec le cookie de session Google, **n'a pas été repris**. Toutes les chaînes, la tienne comprise, passent par l'estimation.
-
-### Où il se pose
-
-Le repère est le bloc de suggestions de YouTube, et le panneau s'insère juste avant. Viser un élément de YouTube plutôt que les panneaux des autres extensions compte : vidIQ pose ses badges (VPH, multiplicateur) **à l'intérieur** des cartes suggérées, si bien qu'un ancrage cherchant « le dernier bloc contenant du vidIQ » désignait la liste entière — le panneau se retrouvait alors après toutes les suggestions, invisible en bas de colonne.
+C'est la **seule** fonction qui interroge YouTube — la liste des vidéos d'une chaîne n'est pas dans la page. Elle le fait **sans aucun cookie**, uniquement sur des données publiques, avec un cache de 6 h, et l'interrupteur du popup la coupe entièrement.
 
 ## Paramètres
-
-En bas du popup, trois interrupteurs :
 
 | Réglage | Effet |
 |---|---|
 | **Bouton transcription** | affiche ou retire le **☰** à côté du J'aime |
 | **Bouton export vidéos** | affiche ou retire le **⤓** en haut de page |
-| **Enregistrer un fichier** | téléchargement d'un `.csv` **en plus** de la copie |
-| **Classement sur 10** | affiche le panneau de classement — et coupe les seules requêtes de l'extension |
+| **Enregistrer un fichier** | télécharge un `.csv` **en plus** de la copie, pour les deux boutons |
+| **Classement sur 10** | affiche le panneau — et coupe les seules requêtes de l'extension |
 
-La copie dans le presse-papiers a **toujours** lieu ; le fichier vient en supplément. Le troisième réglage **vaut pour les deux boutons** — ils passent par la même fonction de remise, donc leur comportement ne peut pas diverger.
+Les changements s'appliquent **immédiatement**, sans recharger l'onglet.
 
-Pourquoi un téléchargement plutôt qu'un fichier collable : **une page web ne peut déposer que du texte dans le presse-papiers**, jamais un fichier. Pour joindre un `.csv` quelque part, il faut donc passer par le fichier téléchargé.
+## Vie privée
 
-Les changements prennent effet **immédiatement**, sans recharger l'onglet : les scripts écoutent le stockage et posent ou retirent les boutons à la volée. Le BOM UTF-8 n'est ajouté que dans le fichier, jamais dans le presse-papiers — collé dans un agent IA, il n'aurait servi qu'à polluer la première ligne.
+Les images sont redimensionnées puis gardées dans `chrome.storage.local`, sur ta machine. **Aucune donnée ne sort du navigateur** et l'extension ne contacte aucun service tiers. La seule exception réseau est le classement sur 10, décrit plus haut.
 
-## Pourquoi l'ancienne version ne marchait plus
+## Lancer les tests
 
-- **Manifest V2** : Chrome a désactivé les extensions MV2 courant 2024-2025.
-- **Classes CSS renommées** : YouTube est passé des noms en kebab-case (`.yt-core-attributed-string`, `.yt-lockup-metadata-view-model__title`) à du camelCase (`ytAttributedStringHost`, `ytLockupMetadataViewModelTitle`). Tout code qui ciblait les anciens noms ne trouve plus rien.
+```bash
+node youtube-tools/tests/rank-core.test.js
+```
 
-## Comment ça marche
+Le cœur du classement, contre de vraies chaînes publiques. Environ 11 requêtes, sans cookie.
 
-L'extension **n'injecte pas de HTML figé**. Elle clone une vraie carte vidéo déjà présente sur la page, puis remplace uniquement son contenu : images, titre, chaîne, vues, durée. Le style, la taille et la grille restent donc ceux du layout courant.
+## Sous le capot
 
-Sécurités complémentaires :
-
-- deux jeux de sélecteurs (anciens noms kebab-case + nouveaux camelCase) ;
-- le texte est écrit dans le nœud feuille le plus « textuel », pas via un chemin DOM rigide ;
-- repli `canvas` si une CSP venait à bloquer les images `data:` ;
-- MutationObserver throttlé, limité à la page courante, qui repose la carte si YouTube re-rend sa grille et se coupe dès que l'URL change ;
-- clics et survols neutralisés sur la fausse carte (aucune lecture ni navigation déclenchée).
-
-**Aucune requête réseau.** L'extension lit tout dans le DOM de la page. Un repli qui interrogeait `/youtubei/v1/get_transcript` a été retiré : mieux vaut perdre un filet de sécurité que de ressembler à du trafic automatisé.
-
-**La lecture de la transcription ne dépend d'aucun nom de classe.** Plutôt que de chercher `.segment-timestamp` / `.segment-text` — que YouTube renomme régulièrement — elle repère les nœuds dont le texte *est* un timecode, puis remonte jusqu'au plus grand ancêtre qui n'en contient qu'un seul : c'est la ligne du segment, et le reste de son texte est le sous-titre. Ça survit aux refontes et fonctionne même si une autre extension a redécoré le panneau.
-
-Deux garde-fous notables : les panneaux de chapitres et de commentaires contiennent eux aussi des timecodes et sont explicitement écartés ; et le repli API vérifie que l'identifiant de vidéo encodé dans les paramètres est bien celui de la page courante — sans quoi une navigation interne ferait copier la transcription de la vidéo précédente.
-
-**L'export des vidéos suit la même logique** : chaque champ est reconnu par ce qu'il *dit*, pas par son nom de classe. Un fragment « 379 k vues » est lu comme des vues, « il y a 1 mois » comme une date, « 1.4x » comme un multiplicateur. C'est ce qui permet de récupérer le multiplicateur de vidIQ, dont les classes CSS sont hachées et changent à chaque version.
-
-Points à connaître, tous mis au jour en faisant tourner l'extracteur sur une vraie page de résultats :
-
-- au-delà du million, le français intercale un « de » (**1,2 M de vues**), et les cartes compactes affichent le compte **sans le mot « vues »** (« 1 M ») ;
-- les cartes s'emboîtent (`ytd-rich-item-renderer` contient un `yt-lockup-view-model`) : sans déduplication, chaque vidéo compterait double ;
-- le sous-titre d'un Short agrège plusieurs informations (« 11 k vues · 6 hours ago ») et doit être découpé avant d'être classé ;
-- le premier badge d'un Short est « Nouveau », pas une durée ;
-- la fausse carte de l'aperçu de miniature est explicitement exclue de l'export.
-
-### Cohabiter avec d'autres extensions
-
-Plusieurs boutons de la page parlent de transcription et ne font pas la même chose. Better YouTube Studio, par exemple, ajoute son propre **« Copier la transcription »** juste à côté du **« Afficher la transcription »** de YouTube — et il ouvre un menu déroulant, pas le panneau.
-
-Les deux libellés contiennent « transcri » : c'est le **verbe** qui les sépare. Un bouton qui dit « copier », « télécharger » ou « enregistrer » n'est jamais cliqué ; un bouton qui dit « afficher », « voir » ou « show » est préféré, de même qu'un vrai composant YouTube (`yt-button-shape`) face à un bouton injecté.
-
-Et si le meilleur candidat n'ouvre rien, on essaie le suivant plutôt que d'abandonner : un bouton inconnu ne bloque plus toute la chaîne.
-
-### Suivre le thème de YouTube
-
-Les jetons `--yt-spec-*` de YouTube ne sont **pas toujours définis**. Les boutons s'appuyaient dessus avec des couleurs de repli écrites pour le thème clair : en thème sombre, ils devenaient noirs sur fond noir.
-
-Le thème est désormais **mesuré**, pas deviné. On remonte depuis le bouton jusqu'au premier ancêtre au fond opaque et on calcule sa luminance perceptuelle. Si tout est transparent, on retombe sur l'attribut `dark` de YouTube, puis sur celui du système. Le résultat est posé en `data-theme` sur le bouton, et la feuille de style fait le reste.
-
-Mesurer plutôt que lire un indice, parce qu'un attribut peut être renommé alors qu'un fond reste un fond. La bascule est prise en compte **sans recharger l'onglet**.
-
-### Garder un bouton posé
-
-YouTube reconstruit ses rangées d'actions en permanence, et un bouton injecté part avec elles. Les deux boutons partagent donc un même mécanisme de maintien (`keepMounted` dans `common.js`), avec deux garde-fous qui bouchent chacun le trou de l'autre :
-
-- un **throttle à bord de fuite** : les mutations sont regroupées, mais la dernière n'est jamais perdue. Une version antérieure ignorait toute mutation survenue dans les 600 ms suivant une vérification aboutie — si YouTube reconstruisait la rangée pile dans cette fenêtre et que la page se taisait ensuite, aucune vérification ne se relançait et le bouton restait absent jusqu'à la navigation suivante ;
-- une **relance espacée** tant que le bouton est attendu mais absent, pour ne dépendre d'aucune mutation future : la rangée peut très bien arriver dans une page devenue silencieuse.
+Comment l'extension survit aux refontes de YouTube, pourquoi elle lit les métadonnées par ce qu'elles *disent* plutôt que par leur nom de classe, comment elle cohabite avec vidIQ et Better YouTube Studio : voir **[NOTES-TECHNIQUES.md](NOTES-TECHNIQUES.md)**.
 
 ## Structure
 
 ```
 youtube-tools/
-├── manifest.json    MV3, permissions : storage, scripting, activeTab,
-│                    clipboardWrite + youtube.com
-├── popup.html/css/js   interface (thème clair/sombre, drag & drop, coller)
-├── content.js       clonage + remplissage + réinjection
-├── content.css      ajustements sur la carte injectée
-├── common.js        réglages, remise (presse-papiers / fichier), maintien des boutons
-├── transcript.js    bouton « copier la transcription » + export CSV
-├── transcript.css   style du bouton, aligné sur celui de YouTube
-├── videos.js        bouton « enregistrer » + export CSV des vidéos de la page
-├── videos.css       style du bouton
+├── manifest.json    MV3 — storage, scripting, activeTab, clipboardWrite
+├── popup.html/css/js   interface (thème, drag & drop, paramètres)
+├── common.js        réglages, remise CSV, maintien des boutons, thème
+├── content.js/css   aperçu de miniature dans le feed
+├── transcript.js/css   bouton ☰ et export de la transcription
+├── videos.js/css    bouton ⤓ et export des vidéos de la page
 ├── rank-core.js     calcul du classement (sans DOM, testable sous Node)
 ├── rank-bridge.js   lecture des données de la vidéo (monde de la page)
-├── rank.js          panneau de la colonne de droite
-├── rank.css         style du panneau
+├── rank.js/css      panneau de la colonne de droite
 ├── tests/           tests du cœur de calcul
 └── icons/           16 / 32 / 48 / 128 px
 ```
 
-Les images sont redimensionnées (1280 px max, WebP) avant d'être stockées dans `chrome.storage.local`. **Aucune donnée ne sort du navigateur** et l'extension ne fait aucune requête vers un service tiers.
-
 ## Crédits
 
-Concept et design d'origine : **PrevYou** par BenjaminCode, design par BastiUi. Cette version est un recodage complet en Manifest V3, l'originale n'étant plus fonctionnelle.
+Concept et design d'origine : **PrevYou** par BenjaminCode, design par BastiUi. Le classement sur 10 reprend le modèle de **Better YouTube Studio** par SQUIDUU. Cette version est un recodage complet en Manifest V3.
