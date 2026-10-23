@@ -7,6 +7,7 @@ const ok = (cond, msg) => { console.log(`  ${cond ? 'OK  ' : 'ECHEC'}  ${msg}`);
 
 async function config() {
   const res = await fetch('https://www.youtube.com/?hl=en&gl=US', {
+    credentials: 'omit',
     headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36', 'accept-language': 'en-US,en' }
   });
   const html = await res.text();
@@ -18,7 +19,7 @@ async function config() {
 
 async function premierePage(cfg, channel, kind) {
   const res = await fetch(`https://www.youtube.com/youtubei/v1/browse?prettyPrint=false&key=${cfg.key}`, {
-    method: 'POST', headers: { 'content-type': 'application/json' },
+    method: 'POST', credentials: 'omit', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ context: { client: { clientName: 'WEB', clientVersion: cfg.version, hl: 'en', gl: 'US' } }, browseId: channel, params: C.TAB_PARAMS[kind] })
   });
   const json = await res.json();
