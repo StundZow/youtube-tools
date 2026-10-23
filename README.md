@@ -78,6 +78,10 @@ position,titre,chaine,vues,vues_num,date,duree,duree_s,multiplicateur,type,url
 
 Place de la vidéo parmi les 10 dernières de sa chaîne, **à âge égal** : les plus anciennes ayant eu plus de temps, on estime combien de vues chacune avait au même âge. Reprise de la fonction du même nom de **Better YouTube Studio** (SQUIDUU), avec le même modèle de calcul.
 
+<div align="center">
+<img src="screenshots/03_classement.png" width="420" alt="Le panneau de classement sur 10">
+</div>
+
 C'est la **seule** fonction qui interroge YouTube — la liste des vidéos d'une chaîne n'est pas dans la page. Elle le fait **sans aucun cookie**, uniquement sur des données publiques, avec un cache de 6 h, et l'interrupteur du popup la coupe entièrement.
 
 ## Paramètres
