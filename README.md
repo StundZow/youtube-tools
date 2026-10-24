@@ -6,7 +6,9 @@
 
 Teste ta miniature, copie une transcription, exporte un feed, situe une vidéo dans sa chaîne — **sans jamais quitter YouTube**.
 
-[**⬇ Installer l'extension**](#prise-en-main) · Chrome · Edge · Brave · Opera
+[**⬇ Télécharger l'extension**](https://github.com/StundZow/youtube-tools/releases/latest/download/youtube-tools.zip) · [Releases](https://github.com/StundZow/youtube-tools/releases)
+
+Chrome · Edge · Brave · Opera
 
 <img src="screenshots/01_popup.png" width="340" alt="Le popup de YouTube Tools">
 
@@ -37,9 +39,9 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 
 ## Prise en main
 
-1. Télécharge ce dépôt (**Code → Download ZIP**) et décompresse-le.
+1. [**Télécharge `youtube-tools.zip`**](https://github.com/StundZow/youtube-tools/releases/latest/download/youtube-tools.zip) et décompresse-le.
 2. Ouvre `chrome://extensions` et active le **Mode développeur** en haut à droite.
-3. **Charger l'extension non empaquetée** → sélectionne le dossier `youtube-tools`.
+3. **Charger l'extension non empaquetée** → sélectionne le dossier `youtube-tools` obtenu.
 4. Épingle l'extension dans la barre d'outils.
 
 *(Sur Edge, Brave ou Opera : `edge://extensions`, `brave://extensions`, etc. — la marche à suivre est identique.)*
@@ -110,6 +112,14 @@ node youtube-tools/tests/rank-core.test.js
 ```
 
 Le cœur du classement, contre de vraies chaînes publiques. Environ 11 requêtes, sans cookie.
+
+## Publier une nouvelle version (pour les mainteneurs)
+
+```bash
+node release.js "Ce qui change"
+```
+
+Le script lit le numéro de version dans `youtube-tools/manifest.json` — seule source de vérité —, fabrique l'archive, crée le tag et publie la release. L'archive porte toujours le même nom, donc le lien de téléchargement du README ne change jamais. Nécessite [GitHub CLI](https://cli.github.com/) authentifié, et un dépôt propre et poussé.
 
 ## Sous le capot
 

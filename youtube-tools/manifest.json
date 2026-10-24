@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Tools",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "Boîte à outils YouTube : aperçu de miniature dans le vrai feed, copie de transcription, export CSV des vidéos d'une page et classement sur 10 de la vidéo regardée.",
   "icons": {
     "16": "icons/icon16.png",
