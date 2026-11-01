@@ -20,7 +20,7 @@ Chrome · Edge · Brave · Opera
 
 YouTube montre une foule de choses qu'il ne laisse pas récupérer : l'effet réel d'une miniature au milieu des autres, le texte d'une vidéo, les chiffres d'un feed, la place d'une vidéo dans l'historique de sa chaîne. Il faut tout relever à la main, ou renoncer.
 
-YouTube Tools ajoute quatre outils directement dans l'interface. Chacun sort une information que tu voyais déjà, dans une forme exploitable : du **CSV** prêt à coller dans un tableur ou un agent IA, et un aperçu de miniature posé **dans le vrai feed**, au milieu des vraies vidéos.
+YouTube Tools ajoute ses outils directement dans l'interface. Chacun sort une information que tu voyais déjà, dans une forme exploitable : du **CSV** prêt à coller dans un tableur ou un agent IA, et un aperçu de miniature posé **dans le vrai feed**, au milieu des vraies vidéos.
 
 ## Pourquoi pas juste ouvrir la miniature en grand ?
 
@@ -31,6 +31,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 🖼️ **Aperçu de miniature dans le vrai feed** — accueil, abonnements, recherche, page de chaîne, suggestions du lecteur. Une vraie carte est clonée, donc le rendu suit toujours le layout courant de YouTube
 - 🎲 **Position aléatoire** — place ta carte quelque part dans la grille plutôt qu'en tête, là où la comparaison est honnête
 - 📝 **Transcription en CSV** — un bouton à côté du J'aime, timecodes et métadonnées de la vidéo inclus
+- ✨ **Résumé par Gemini** — affiché à côté de la vidéo, avec des timecodes cliquables et le point en cours surligné
 - 💾 **Export des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
 - 🏆 **Classement sur 10** — où se situe la vidéo parmi les 10 dernières de sa chaîne, à âge égal
 - 🌗 **Thème clair / sombre** — les boutons mesurent le fond de la page et s'y accordent, sans recharger
@@ -48,7 +49,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 
 Pour l'aperçu de miniature : clique sur l'icône, renseigne la chaîne, glisse ou colle ta miniature, saisis le titre, puis **Aperçu**. L'onglet YouTube passe au premier plan avec ta carte injectée. **Retirer l'aperçu** l'enlève ; la flèche circulaire remet les champs à zéro.
 
-## Les quatre outils
+## Les outils
 
 ### Aperçu de miniature
 
@@ -64,6 +65,16 @@ titre,chaine,debut,fin,debut_s,texte,date,date_iso,vues,vues_num,likes,duree,dur
 ```
 
 `date_iso` est **toujours** une date absolue : une date relative pourrit, « il y a 9 mois » désignera autre chose dans trois mois. `vues_num` et `likes` reprennent les comptes exacts quand la page les donne. `duree_s` permet de trier et de calculer des densités.
+
+### Résumé par Gemini (bouton ✨ Résumer, à côté du ☰)
+
+Une fois la transcription copiée, un bouton **Résumer** apparaît à côté. Il envoie la transcription à **Gemini**, puis affiche le résumé **en haut de la colonne de droite**, à lire en même temps que la vidéo :
+
+- trois parties — **En bref**, **Points clés**, **À retenir** ;
+- chaque **timecode est cliquable** et amène la vidéo au bon moment ;
+- le point en cours de lecture est **surligné** au fil de la vidéo.
+
+Aucune clé d'API : c'est ta session Gemini qui répond. Une petite fenêtre Gemini s'ouvre le temps de la rédaction puis se referme toute seule — elle doit rester au premier plan, Gemini ne rédige pas dans un onglet caché. Il faut être connecté à [gemini.google.com](https://gemini.google.com) dans ce navigateur, et chaque résumé crée une conversation dans ton historique Gemini. Rouvrir le résumé d'une vidéo ne redemande rien.
 
 ### Export des vidéos d'une page (bouton ⤓, barre du haut)
 
@@ -103,7 +114,10 @@ Les changements s'appliquent **immédiatement**, sans recharger l'onglet.
 
 ## Vie privée
 
-Les images sont redimensionnées puis gardées dans `chrome.storage.local`, sur ta machine. **Aucune donnée ne sort du navigateur** et l'extension ne contacte aucun service tiers. La seule exception réseau est le classement sur 10, décrit plus haut.
+Les images sont redimensionnées puis gardées dans `chrome.storage.local`, sur ta machine. L'extension n'a **aucun serveur** à elle. Deux fonctions sortent du navigateur, et seulement quand tu les utilises :
+
+- le **résumé** envoie la transcription de la vidéo à **Gemini**, dans ta propre session Google ;
+- le **classement sur 10** lit la liste publique des vidéos de la chaîne, sans cookie.
 
 ## Lancer les tests
 
@@ -134,6 +148,9 @@ youtube-tools/
 ├── common.js        réglages, remise CSV, maintien des boutons, thème
 ├── content.js/css   aperçu de miniature dans le feed
 ├── transcript.js/css   bouton ☰ et export de la transcription
+├── summary.js/css   bouton ✨ Résumer et panneau du résumé
+├── background.js    service worker : ouvre Gemini, rapporte sa réponse
+├── gemini-writer.js pilote de la page Gemini (écrit, envoie, lit la réponse)
 ├── videos.js/css    bouton ⤓ et export des vidéos de la page
 ├── rank-core.js     calcul du classement (sans DOM, testable sous Node)
 ├── rank-bridge.js   lecture des données de la vidéo (monde de la page)
@@ -144,4 +161,4 @@ youtube-tools/
 
 ## Crédits
 
-Concept et design d'origine : **PrevYou** par BenjaminCode, design par BastiUi. Le classement sur 10 reprend le modèle de **Better YouTube Studio** par SQUIDUU. Cette version est un recodage complet en Manifest V3.
+Concept et design d'origine : **PrevYou** par BenjaminCode, design par BastiUi. Le classement sur 10 reprend le modèle de **Better YouTube Studio** par SQUIDUU. Le pilotage de Gemini vient de **Google More**. Cette version est un recodage complet en Manifest V3.

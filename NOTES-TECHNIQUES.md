@@ -114,6 +114,19 @@ La réserve honnête : `/youtubei/v1/browse` est une API **interne**, non docume
 
 `rank-bridge.js` est la seule partie qui tourne dans le **monde de la page** (`world: "MAIN"`), parce que les données de la vidéo sont rangées dans des propriétés JavaScript de `ytd-watch-flexy`, invisibles depuis le monde isolé. Il ne fait que recopier quelques informations publiques dans un attribut du document. Il n'émet aucune requête et ne lit aucun cookie.
 
+## Le résumé par Gemini
+
+Repris de **Google More** (`tools/gemini-rewrite/`), qui pilote déjà la même page. Si Google modifie Gemini, il faut adapter `gemini-writer.js` **et** son équivalent dans Google More.
+
+- **Pas d'URL avec paramètre** : Gemini n'accepte pas de prompt dans l'adresse. L'extension ouvre la page, écrit dans l'éditeur Quill avec `document.execCommand('insertText')` — un « coller » simulé est ignoré — puis clique sur Envoyer.
+- **Une fenêtre au premier plan** : dans un onglet caché, Gemini ne rédige pas. D'où la petite fenêtre `popup`, refermée une fois la réponse lue. En cas de connexion demandée, elle reste ouverte.
+- **Le service worker doit rester éveillé** : un service worker MV3 s'endort après 30 s d'inactivité, et un résumé peut prendre plus longtemps. Le pilote ouvre donc un port et y envoie un message toutes les 4 s.
+- **La réponse est lue par blocs**, pas en texte à plat : un titre « ## Points clés » devient un `<h2>` qui ne garde aucun dièse. Relire le DOM rendu est le seul moyen de savoir ce qui était titre, paragraphe ou puce. Le raisonnement (`<model-thoughts>`), les icônes et les renvois sont écartés. Si Gemini répond dans un bloc de code, le Markdown brut est relu ligne à ligne.
+- **La fin de rédaction** se détecte comme dans Google More : plus de bouton « Arrêter », et un texte stable — 0,8 s après l'apparition des actions du message, sinon 3 s. Ce délai empêche de couper la réponse pendant une pause de Gemini au milieu de la rédaction.
+- **Transcription regroupée par tranches** d'au moins 20 s avant l'envoi : une vidéo d'une heure compte un millier de segments, qu'il serait long de taper dans l'éditeur pour aucun gain sur le résumé.
+- **Rien n'est injecté comme HTML** dans YouTube : chaque bloc est reconstruit avec `textContent`, et seuls les timecodes deviennent des liens. Un timecode qui dépasse la durée de la vidéo (« 23:59 ») n'est pas lié.
+- **Le point en cours** est suivi par un écouteur `timeupdate` en phase de **capture** sur le document : l'événement ne remonte pas, mais la capture le reçoit quand même, ce qui évite de suivre un `<video>` que YouTube peut remplacer.
+
 ## Le CSV
 
 Champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien. Le **BOM UTF-8** n'est ajouté que dans le fichier téléchargé, jamais dans le presse-papiers — collé dans un agent IA, il n'aurait servi qu'à polluer la première ligne.

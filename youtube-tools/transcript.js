@@ -687,6 +687,15 @@
       return;
     }
 
+    // Garde la transcription sous la main pour le bouton « Resumer »
+    // (summary.js), qui apparait a cote une fois la copie faite. Elle est
+    // rattachee a la video : changer de video la rend caduque.
+    TV.lastTranscript = {
+      id: new URLSearchParams(location.search).get('v') || '',
+      meta: videoMeta(),
+      rows
+    };
+
     const { ok, file } = await TV.deliver(toCsv(rows), fileName());
     if (!ok) { setState(btn, 'ko', 'Copie refusée'); return; }
     setState(btn, 'ok', rows.length + (file ? ' lignes ⤓' : ' lignes'));
