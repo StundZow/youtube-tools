@@ -133,6 +133,10 @@ Le panneau de vidIQ est `div#video-companion-root.vidiq-react`, **enfant direct*
 
 Il est **masqué**, pas supprimé (attribut `data-yttools-hidden`) : supprimé, vidIQ le réinsérerait aussitôt. Le masquage et la disparition du classement ne valent que pour la vidéo résumée.
 
+### Une ligne horodatée par moment
+
+Le résumé n'est plus une poignée de points clés mais une **frise** : une ligne courte par moment ou changement de sujet, environ toutes les 90 s (entre 8 et 30 lignes selon la durée), chacune avec son timecode. Le surlignage suit cette frise — le timecode le plus avancé qui ne dépasse pas la lecture — et pas « la dernière ligne déjà passée dans la page » : la section « À retenir », placée après et non chronologique, l'aurait fait sauter.
+
 ### Les timecodes manquants
 
 Gemini oublie parfois les timecodes malgré la consigne. Deux étages : le prompt donne un **modèle à recopier** et rappelle la consigne **après** la transcription, ce qui est bien mieux suivi qu'une phrase noyée avant un long texte. Et si un point en manque quand même, on le rapproche localement d'un passage de la transcription : mots rares en commun, pondérés par leur rareté, sur une **fenêtre glissante de 20 s sur les segments**. Pas sur les tranches du prompt : leurs frontières coupent les sujets en deux, et le timecode tombait quelques secondes trop tard. Un point qui ne ressemble à rien reste sans timecode — on n'invente pas.
@@ -141,7 +145,14 @@ Gemini oublie parfois les timecodes malgré la consigne. Deux étages : le promp
 
 Repères lus sur une vraie page : `ytd-comment-thread-renderer` > `ytd-comment-view-model`, avec `#author-text`, `#content-text`, `#vote-count-middle`, `#more-replies`. Piège : `#pinned-comment-badge` et `#creator-heart` existent sur **tous** les commentaires, vides quand ils ne s'appliquent pas. Un repérage par présence aurait marqué chaque commentaire comme épinglé.
 
-YouTube charge la suite quand `ytd-continuation-item-renderer` entre à l'écran : on l'y amène, on attend, on recommence jusqu'à 100 commentaires, 20 s ou quatre tours sans nouveauté, puis on remet la page à sa position.
+YouTube charge la suite quand la fin de la liste arrive à l'écran. La section contient **plusieurs** `ytd-continuation-item-renderer`, et une seule est la bonne :
+
+- chaque fil a sa continuation de **réponses** (`.replies-continuation`), repliée, sans place à l'écran ;
+- la toute dernière de la page est le **gabarit du chargement initial** (`[is-initial-load]`), masqué une fois les premiers commentaires affichés.
+
+La première version prenait « la dernière de la page », donc ce gabarit : faire défiler jusqu'à un élément masqué ne bouge rien, la page ne défilait pas et on restait à 20. Désormais on écarte réponses et gabarit, et surtout on fait **défiler la fenêtre** au-delà du dernier commentaire — ce qui déclenche la suite quel que soit l'élément exact que YouTube surveille, et même si la continuation n'est pas encore insérée. On s'arrête à 100 commentaires, au bout de 20 s, ou quand plus rien n'arrive, puis on remet la page à sa position.
+
+Le test modélise YouTube honnêtement : la suite se charge quand la fin de la liste est à l'écran, pas quand on appelle la fonction précise que l'extension utilise. Une première version déclenchait le chargement sur ce geste exact ; elle ne pouvait donc pas échouer, et n'a pas vu le bug. Sur la vraie page telle quelle, l'ancienne logique reste à 20 sans défiler ; la nouvelle en charge 100.
 
 ## Le scintillement de la colonne de droite
 

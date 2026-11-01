@@ -85,9 +85,39 @@
   }
 
   /**
+   * L'element qui fait charger la suite de la LISTE.
+   *
+   * La section en contient plusieurs, et une seule est la bonne :
+   *  - chaque fil a sa continuation de REPONSES (.replies-continuation),
+   *    repliee, sans place a l'ecran ;
+   *  - la toute derniere de la page est le GABARIT du chargement initial
+   *    ([is-initial-load]), masque une fois les premiers commentaires affiches.
+   * L'ancienne version prenait « la derniere de la page » — donc ce gabarit.
+   * Faire defiler jusqu'a un element masque ne bouge rien : la page ne
+   * defilait pas, et on restait a 20 commentaires.
+   */
+  function suiteDeLaListe() {
+    const candidates = Array.from(document.querySelectorAll('ytd-comments ytd-continuation-item-renderer'))
+      .filter((c) => !c.classList.contains('replies-continuation') && !c.closest('ytd-comment-replies-renderer'));
+    const active = candidates.filter((c) => !c.hasAttribute('is-initial-load'));
+    return active[active.length - 1] || candidates[candidates.length - 1] || null;
+  }
+
+  /** Attend que de nouveaux fils arrivent, jusqu'a `max` ms. */
+  async function attendreDeNouveaux(n, max) {
+    const fin = Date.now() + max;
+    while (Date.now() < fin) {
+      await sleep(250);
+      if (fils().length > n) { await sleep(400); return fils().length; }   // laisse finir le lot
+    }
+    return fils().length;
+  }
+
+  /**
    * Fait charger des commentaires jusqu'a CIBLE, puis remet la page ou elle
-   * etait. YouTube charge la suite quand son element de continuation devient
-   * visible : on l'amene a l'ecran, on attend, on recommence.
+   * etait. YouTube charge la suite quand la fin de la liste arrive a l'ecran :
+   * on y amene le dernier commentaire puis la continuation, et on descend
+   * encore d'une demi-page — ce qui marche quel que soit le declencheur exact.
    */
   async function charger(onProgres) {
     const y0 = window.scrollY;
@@ -96,14 +126,25 @@
     let surPlace = 0;
     try {
       while (n < CIBLE && Date.now() < fin) {
-        const suites = document.querySelectorAll('ytd-comments ytd-continuation-item-renderer');
-        const suite = suites[suites.length - 1];
-        if (!suite) break;                               // plus rien a charger
-        suite.scrollIntoView({ block: 'end' });
-        await sleep(900);
-        const n2 = fils().length;
+        // On n'exige PAS la continuation pour defiler : YouTube peut ne
+        // l'inserer qu'une fois la fin de la liste a l'ecran. Faire descendre
+        // la fenetre au-dela du dernier commentaire suffit a declencher la suite.
+        const liste = fils();
+        const dernier = liste[liste.length - 1];
+        if (dernier) dernier.scrollIntoView({ block: 'end' });
+        const suite = suiteDeLaListe();
+        if (suite) suite.scrollIntoView({ block: 'end' });
+        window.scrollBy(0, Math.round((window.innerHeight || 800) / 2));
+
+        const n2 = await attendreDeNouveaux(n, 3000);
         onProgres(n2);
-        if (n2 === n) { if (++surPlace >= 4) break; } else surPlace = 0;
+        if (n2 === n) {
+          surPlace++;
+          // Rien de neuf et plus de continuation : la liste est complete.
+          if (surPlace >= 3 || (!suiteDeLaListe() && surPlace >= 1)) break;
+        } else {
+          surPlace = 0;
+        }
         n = n2;
       }
     } finally {
@@ -127,36 +168,41 @@
       return `[${marques.join(', ')}] ${c.auteur} : ${c.texte}`;
     });
 
+    // Un resume de commentaires se lit en dix secondes : quelques points
+    // globaux, ou l'on voit d'un coup d'oeil ce que pense la majorite, ce que
+    // pense la minorite et ce que le public demande.
     return [
-      'Résume les commentaires de cette vidéo YouTube.',
+      'Résume les commentaires de cette vidéo YouTube en quelques points globaux, très courts.',
       '',
       titre && `Titre : ${titre}`,
       chaine && `Chaîne : ${chaine}`,
       `${coms.length} commentaires parmi les plus populaires${total ? ` (sur ${total} au total)` : ''}. `
         + 'Les likes et réponses sont entre crochets : un commentaire très aimé pèse plus qu’un autre.',
       '',
-      'Réponds EXACTEMENT dans ce format, sans rien avant ni après :',
+      'Réponds EXACTEMENT dans ce format, sans rien avant ni après. Chaque ligne fait 15 mots au plus, sans citation :',
       '',
       '## En bref',
-      '(le ressenti général du public, en une ou deux phrases)',
+      '(le ressenti général, en une phrase)',
       '',
-      '## Ce qui revient le plus',
-      '- (une réaction ou une idée fréquente, avec une courte citation représentative entre « »)',
-      '(4 à 8 points, du plus présent au moins présent)',
+      '## La majorité',
+      '- (ce que pensent la plupart des gens)',
+      '(2 ou 3 points)',
       '',
-      '## Critiques et désaccords',
-      '- (…)',
+      '## Une minorité',
+      '- (un avis moins répandu ou divergent)',
+      '(1 ou 2 points)',
       '',
-      '## Questions et demandes',
-      '- (ce que le public demande : une suite, un sujet, une précision…)',
+      '## Ce que les gens demandent',
+      '- (une suite, un sujet, une précision…)',
+      '(1 à 3 points)',
       '',
       'Si une partie n’a rien de notable, écris simplement « Rien de notable. »',
       '',
       'Commentaires :',
       lignes.join('\n'),
       '',
-      'RAPPEL : reste fidèle aux commentaires, n’invente rien. Garde les timecodes cités par le public '
-        + '(comme 3:42) tels quels. Réponds en français.'
+      'RAPPEL : quelques points globaux et courts, pas de détail ni de citation. Reste fidèle aux '
+        + 'commentaires, n’invente rien. Réponds en français.'
     ].join('\n');
   }
 
@@ -312,5 +358,5 @@
   });
 
   // Exposes pour les tests uniquement.
-  window.__yttoolsComments = { lireCommentaires, prompt, charger, lancer, totalAnnonce };
+  window.__yttoolsComments = { lireCommentaires, prompt, charger, lancer, totalAnnonce, suiteDeLaListe };
 })();

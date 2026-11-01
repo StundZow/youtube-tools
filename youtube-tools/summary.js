@@ -102,6 +102,13 @@
       m.duree && `Durée : ${m.duree}`
     ].filter(Boolean).join('\n');
 
+    // Une ligne horodatee par moment : on voit d'un coup d'oeil de quoi parle
+    // chaque passage, et on y saute d'un clic. La densite suit la duree — une
+    // ligne toutes les ~90 s, entre 8 et 30 lignes.
+    const dureeS = Number(m.duree_s) || (tr.rows.length ? tr.rows[tr.rows.length - 1].start : 0);
+    const lignes = Math.max(8, Math.min(30, Math.round(dureeS / 90)));
+    const pas = Math.max(1, Math.round(dureeS / 60 / lignes));
+
     // Le format est donne comme un MODELE a recopier, et rappele apres la
     // transcription : un modele suivi d'un rappel est bien mieux respecte
     // qu'une consigne en prose noyee avant un long texte.
@@ -113,21 +120,24 @@
       'Réponds EXACTEMENT dans ce format, sans rien avant ni après :',
       '',
       '## En bref',
-      '(une ou deux phrases sur le sujet de la vidéo)',
+      '(une phrase sur le sujet de la vidéo)',
       '',
-      '## Points clés',
-      '- [0:00] (premier point important)',
-      '- [2:15] (point suivant)',
-      '(entre 5 et 10 points, dans l’ordre de la vidéo)',
+      '## Déroulé',
+      '- [0:00] (ce qui se passe, en quelques mots)',
+      '- [1:30] (le moment suivant)',
+      `(environ ${lignes} lignes, à peu près une toutes les ${pas} minute${pas > 1 ? 's' : ''}, dans l’ordre de la vidéo ; `
+        + 'une ligne par moment ou changement de sujet, 12 mots au plus)',
       '',
       '## À retenir',
-      '(la conclusion ou le message principal, en une ou deux phrases)',
+      '- [m:ss] (une idée clé, avec le timecode où elle est dite)',
+      '(2 ou 3 lignes)',
       '',
       'Transcription :',
       parts.map((p) => `[${fmt(p.start, withHours)}] ${p.text}`).join('\n'),
       '',
-      'RAPPEL : chaque ligne de « Points clés » commence OBLIGATOIREMENT par un timecode entre crochets, '
-        + 'repris de la transcription ci-dessus. Reste fidèle à la transcription, n’invente rien. Réponds en français.'
+      'RAPPEL : CHAQUE ligne de « Déroulé » et de « À retenir » commence OBLIGATOIREMENT par un timecode '
+        + 'entre crochets, repris de la transcription ci-dessus. Lignes courtes. Reste fidèle à la transcription, '
+        + 'n’invente rien. Réponds en français.'
     ].join('\n');
   }
 
@@ -446,21 +456,33 @@
       message(body, erreurLisible(panneau.error), () => { cache.delete(videoId()); lancer(true); });
       return;
     }
-    const n = panneau.blocks.filter((b) => b.type === 'li').length;
-    sous.textContent = `par Gemini · ${n} point${n > 1 ? 's' : ''} clé${n > 1 ? 's' : ''}`;
+    sous.textContent = 'par Gemini · clique un timecode pour y aller';
     renderBlocks(body, panneau.blocks);
     surligner();
   }
 
-  /** Le point en cours de lecture : le dernier dont le timecode est deja passe. */
+  /**
+   * Le moment en cours de lecture, dans la frise (le premier bloc de lignes
+   * horodatees) : celui dont le timecode est le plus avance sans depasser la
+   * lecture.
+   *
+   * Pas « la derniere ligne deja passee dans l'ordre de la page » : « A
+   * retenir » vient apres la frise et n'est pas chronologique, le surlignage y
+   * aurait saute au lieu de suivre la video.
+   */
   function surligner() {
     const card = document.getElementById(CARD_ID);
     const v = video();
     if (!card || !v || card.dataset.state !== 'ok') return;
     const t = v.currentTime;
+    const frise = Array.from(card.querySelectorAll('ul')).find((u) => u.querySelector('li[data-t]'));
     let actif = null;
-    for (const li of card.querySelectorAll('li[data-t]')) {
-      if (Number(li.dataset.t) <= t + 0.5) actif = li;
+    let plusAvance = -1;
+    if (frise) {
+      for (const li of frise.querySelectorAll('li[data-t]')) {
+        const lt = Number(li.dataset.t);
+        if (lt <= t + 0.5 && lt > plusAvance) { plusAvance = lt; actif = li; }
+      }
     }
     for (const li of card.querySelectorAll('li.is-active')) if (li !== actif) li.classList.remove('is-active');
     if (actif && !actif.classList.contains('is-active')) actif.classList.add('is-active');

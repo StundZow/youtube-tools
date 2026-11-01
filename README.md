@@ -71,7 +71,8 @@ titre,chaine,debut,fin,debut_s,texte,date,date_iso,vues,vues_num,likes,duree,dur
 
 Une fois la transcription copiée, un bouton **Résumer** apparaît à côté. Il envoie la transcription à **Gemini**, puis affiche le résumé **en haut de la colonne de droite**, à lire en même temps que la vidéo :
 
-- trois parties — **En bref**, **Points clés**, **À retenir** ;
+- **En bref** en une phrase, puis un **Déroulé** : une ligne courte et horodatée par moment, environ une toutes les 90 s, pour voir d'un coup d'œil de quoi parle chaque passage ;
+- **À retenir** : deux ou trois idées clés, chacune avec le moment où elle est dite ;
 - chaque **timecode est cliquable** et amène la vidéo au bon moment ;
 - le point en cours de lecture est **surligné** au fil de la vidéo ;
 - le temps de la lecture, le **classement sur 10 et le panneau de vidIQ s'effacent** pour que le résumé soit côte à côte avec la vidéo — sur cette vidéo seulement : les suivantes les retrouvent, et fermer le résumé les rend aussi.
@@ -84,9 +85,11 @@ Aucune clé d'API : c'est ta session Gemini qui répond. Une petite fenêtre Gem
 
 À côté de **Trier par**, un bouton **Résumer les commentaires**. YouTube n'en affiche qu'une vingtaine à la fois : l'extension fait défiler la page pour en charger une **centaine**, revient exactement où tu étais, puis les envoie à Gemini en **une seule demande**. Le résumé s'affiche juste sous l'en-tête :
 
-- **En bref** — le ressenti général ;
-- **Ce qui revient le plus** — du plus présent au moins présent, avec une citation représentative ;
-- **Critiques et désaccords**, **Questions et demandes**.
+- **En bref** — le ressenti général, en une phrase ;
+- **La majorité** et **Une minorité** — ce que pensent la plupart des gens, et les avis moins répandus ;
+- **Ce que les gens demandent** — une suite, un sujet, une précision.
+
+Des points globaux et courts, pas de citations : ça se lit en dix secondes.
 
 Les likes et le nombre de réponses accompagnent chaque commentaire : un avis très aimé pèse plus qu'un autre. Les timecodes cités par le public deviennent cliquables.
 
