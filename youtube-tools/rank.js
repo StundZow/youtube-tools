@@ -93,29 +93,18 @@
   // Conteneurs dans lesquels on accepte de se poser, du plus precis au plus large.
   const CONTAINERS = ['#secondary-inner', '#secondary'];
 
-  // Le bloc des videos suggerees, et la rangee de filtres qui le coiffe.
-  const SUGGESTIONS = [
-    'YTD-WATCH-NEXT-SECONDARY-RESULTS-RENDERER',
-    'YTD-FEED-FILTER-CHIP-BAR-RENDERER'
-  ];
-
   /**
-   * L'enfant du conteneur devant lequel se poser : le premier bloc de
-   * suggestions. Le panneau atterrit donc juste au-dessus des videos proposees,
-   * sous les panneaux des autres extensions.
+   * L'enfant de la colonne devant lequel se poser : le bloc des suggestions.
+   * Le panneau atterrit donc juste au-dessus des videos proposees.
    *
-   * On vise un element de YOUTUBE, pas un element de vidIQ. La version
-   * precedente cherchait « le dernier enfant contenant quelque chose de vidIQ »
-   * — sauf que vidIQ pose aussi ses badges (VPH, multiplicateur) a l'interieur
-   * des cartes suggerees. Le bloc des suggestions correspondait donc, et le
-   * panneau se retrouvait apres TOUTE la liste, invisible en bas de colonne.
+   * On vise un element de YOUTUBE, jamais un element de vidIQ, qui pose ses
+   * badges jusque dans les cartes suggerees. Et on le cherche a toute
+   * profondeur (voir TV.suggestionsBlock) : sur la vraie page il vit dans
+   * #related, et ne regarder que les enfants directs le ratait.
    */
   function anchorIn(container) {
-    for (const child of container.children) {
-      if (child.id === CARD_ID) continue;
-      if (SUGGESTIONS.includes(child.tagName)) return child;
-    }
-    return null;
+    const bloc = TV.suggestionsBlock(container);
+    return bloc && bloc.id !== CARD_ID ? bloc : null;
   }
 
   function containerNow() {
@@ -132,10 +121,11 @@
     if (!c) return;
     const anchor = anchorIn(c);
     if (anchor) {
-      if (el.parentElement !== c || el.nextElementSibling !== anchor) anchor.before(el);
-    } else if (el.parentElement !== c || c.firstElementChild !== el) {
-      // Pas de suggestions reperees : la tete de colonne, au moins c'est visible.
-      c.prepend(el);
+      if (el.parentElement !== c || el.nextElementSibling !== anchor) TV.moveGently(el, () => anchor.before(el));
+    } else if (el.parentElement !== c) {
+      // Pas de suggestions reperees : on se pose, mais on ne reclame plus la
+      // tete de colonne a chaque passage — c'etait le scintillement.
+      TV.moveGently(el, () => c.append(el));
     }
   }
 
@@ -295,7 +285,8 @@
 
   TV.keepMounted({
     id: CARD_ID,
-    wanted: () => isWatchPage() && TV.settings.get().rankBadge,
+    // Masque sur la video dont on lit le resume : le panneau de resume prend la place.
+    wanted: () => isWatchPage() && TV.settings.get().rankBadge && !TV.rankHidden.has(videoId()),
     place,
     refresh
   });

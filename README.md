@@ -31,7 +31,8 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 🖼️ **Aperçu de miniature dans le vrai feed** — accueil, abonnements, recherche, page de chaîne, suggestions du lecteur. Une vraie carte est clonée, donc le rendu suit toujours le layout courant de YouTube
 - 🎲 **Position aléatoire** — place ta carte quelque part dans la grille plutôt qu'en tête, là où la comparaison est honnête
 - 📝 **Transcription en CSV** — un bouton à côté du J'aime, timecodes et métadonnées de la vidéo inclus
-- ✨ **Résumé par Gemini** — affiché à côté de la vidéo, avec des timecodes cliquables et le point en cours surligné
+- ✨ **Résumé de la vidéo par Gemini** — côte à côte avec la vidéo, timecodes cliquables, point en cours surligné
+- 💬 **Résumé des commentaires** — une centaine chargés automatiquement, ressenti, tendances, critiques et demandes
 - 💾 **Export des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
 - 🏆 **Classement sur 10** — où se situe la vidéo parmi les 10 dernières de sa chaîne, à âge égal
 - 🌗 **Thème clair / sombre** — les boutons mesurent le fond de la page et s'y accordent, sans recharger
@@ -72,9 +73,22 @@ Une fois la transcription copiée, un bouton **Résumer** apparaît à côté. I
 
 - trois parties — **En bref**, **Points clés**, **À retenir** ;
 - chaque **timecode est cliquable** et amène la vidéo au bon moment ;
-- le point en cours de lecture est **surligné** au fil de la vidéo.
+- le point en cours de lecture est **surligné** au fil de la vidéo ;
+- le temps de la lecture, le **classement sur 10 et le panneau de vidIQ s'effacent** pour que le résumé soit côte à côte avec la vidéo — sur cette vidéo seulement : les suivantes les retrouvent, et fermer le résumé les rend aussi.
+
+Si Gemini oublie un timecode, l'extension retrouve le passage correspondant dans la transcription, sans nouvelle requête. Un timecode ainsi déduit s'affiche **encadré** plutôt que plein, pour qu'on sache que c'est une estimation.
 
 Aucune clé d'API : c'est ta session Gemini qui répond. Une petite fenêtre Gemini s'ouvre le temps de la rédaction puis se referme toute seule — elle doit rester au premier plan, Gemini ne rédige pas dans un onglet caché. Il faut être connecté à [gemini.google.com](https://gemini.google.com) dans ce navigateur, et chaque résumé crée une conversation dans ton historique Gemini. Rouvrir le résumé d'une vidéo ne redemande rien.
+
+### Résumé des commentaires (bouton dans l'en-tête des commentaires)
+
+À côté de **Trier par**, un bouton **Résumer les commentaires**. YouTube n'en affiche qu'une vingtaine à la fois : l'extension fait défiler la page pour en charger une **centaine**, revient exactement où tu étais, puis les envoie à Gemini en **une seule demande**. Le résumé s'affiche juste sous l'en-tête :
+
+- **En bref** — le ressenti général ;
+- **Ce qui revient le plus** — du plus présent au moins présent, avec une citation représentative ;
+- **Critiques et désaccords**, **Questions et demandes**.
+
+Les likes et le nombre de réponses accompagnent chaque commentaire : un avis très aimé pèse plus qu'un autre. Les timecodes cités par le public deviennent cliquables.
 
 ### Export des vidéos d'une page (bouton ⤓, barre du haut)
 
@@ -116,7 +130,7 @@ Les changements s'appliquent **immédiatement**, sans recharger l'onglet.
 
 Les images sont redimensionnées puis gardées dans `chrome.storage.local`, sur ta machine. L'extension n'a **aucun serveur** à elle. Deux fonctions sortent du navigateur, et seulement quand tu les utilises :
 
-- le **résumé** envoie la transcription de la vidéo à **Gemini**, dans ta propre session Google ;
+- les **résumés** envoient la transcription ou les commentaires à **Gemini**, dans ta propre session Google ;
 - le **classement sur 10** lit la liste publique des vidéos de la chaîne, sans cookie.
 
 ## Lancer les tests
@@ -148,7 +162,8 @@ youtube-tools/
 ├── common.js        réglages, remise CSV, maintien des boutons, thème
 ├── content.js/css   aperçu de miniature dans le feed
 ├── transcript.js/css   bouton ☰ et export de la transcription
-├── summary.js/css   bouton ✨ Résumer et panneau du résumé
+├── summary.js/css   résumé de la vidéo, et interface commune des résumés
+├── comments.js     résumé des commentaires
 ├── background.js    service worker : ouvre Gemini, rapporte sa réponse
 ├── gemini-writer.js pilote de la page Gemini (écrit, envoie, lit la réponse)
 ├── videos.js/css    bouton ⤓ et export des vidéos de la page

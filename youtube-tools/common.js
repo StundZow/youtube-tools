@@ -170,6 +170,60 @@
     return { ok: copied || file, copied, file };
   }
 
+  /* ------------------------------------------------- colonne de droite */
+
+  /** L'enfant direct de `parent` qui contient `el` (ou null). */
+  function childContaining(parent, el) {
+    let n = el;
+    while (n && n.parentElement && n.parentElement !== parent) n = n.parentElement;
+    return n && n.parentElement === parent ? n : null;
+  }
+
+  /**
+   * Le bloc des videos suggerees, tel qu'il est ENFANT DIRECT de la colonne.
+   *
+   * Sur la vraie page, ytd-watch-next-secondary-results-renderer n'est pas un
+   * enfant direct de #secondary-inner : il vit dans #related. Ne chercher que
+   * parmi les enfants directs ne le trouvait donc jamais, et le panneau de
+   * classement retombait en tete de colonne — la ou le resume veut aussi etre.
+   */
+  function suggestionsBlock(col) {
+    if (!col) return null;
+    // La rangee de filtres (« Tout », « De la serie »…) coiffe les suggestions :
+    // si elle est un bloc a part, c'est AVANT elle qu'il faut se poser, sinon
+    // on la separerait de la liste qu'elle filtre.
+    const candidats = Array.from(col.querySelectorAll('ytd-feed-filter-chip-bar-renderer'))
+      .filter((n) => !n.closest('ytd-engagement-panel-section-list-renderer'));
+    const liste = col.querySelector('ytd-watch-next-secondary-results-renderer, #related');
+    if (liste) candidats.push(liste);
+    if (!candidats.length) return null;
+    // Le premier dans l'ordre de la page (4 = DOCUMENT_POSITION_FOLLOWING).
+    candidats.sort((a, b) => (a.compareDocumentPosition(b) & 4 ? -1 : 1));
+    return childContaining(col, candidats[0]);
+  }
+
+  /**
+   * Deplace un element, sans jamais entrer dans une bataille de position.
+   *
+   * Deux scripts qui veulent chacun la meme place (deux panneaux en tete de
+   * colonne, ou vidIQ qui remet le sien) se repoussent a chaque passage : la
+   * colonne scintille. Au-dela de 4 deplacements en 4 s, on cede la place.
+   */
+  function moveGently(el, deplacer) {
+    const now = Date.now();
+    const recents = (el.__yttoolsMoves || []).filter((t) => now - t < 4000);
+    if (recents.length >= 4) { el.__yttoolsMoves = recents; return false; }
+    recents.push(now);
+    el.__yttoolsMoves = recents;
+    deplacer();
+    return true;
+  }
+
+  // Videos pour lesquelles le classement sur 10 est masque : celles dont on a
+  // demande un resume. Masquer ne vaut que pour CETTE video ; les suivantes
+  // retrouvent leur classement.
+  const rankHidden = new Set();
+
   /* ------------------------------------------------------------------ theme */
 
   /** « rgb(15, 15, 15) » -> true : la couleur est-elle sombre ? */
@@ -304,5 +358,6 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, applyTheme, isDark, RE, parseCount, parseDuration, slug, stamp };
+  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, applyTheme, isDark, childContaining, suggestionsBlock, moveGently, rankHidden,
+    RE, parseCount, parseDuration, slug, stamp };
 })();

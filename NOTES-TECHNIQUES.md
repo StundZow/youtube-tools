@@ -127,6 +127,28 @@ Repris de **Google More** (`tools/gemini-rewrite/`), qui pilote déjà la même 
 - **Rien n'est injecté comme HTML** dans YouTube : chaque bloc est reconstruit avec `textContent`, et seuls les timecodes deviennent des liens. Un timecode qui dépasse la durée de la vidéo (« 23:59 ») n'est pas lié.
 - **Le point en cours** est suivi par un écouteur `timeupdate` en phase de **capture** sur le document : l'événement ne remonte pas, mais la capture le reçoit quand même, ce qui évite de suivre un `<video>` que YouTube peut remplacer.
 
+### Côte à côte avec la vidéo
+
+Le panneau de vidIQ est `div#video-companion-root.vidiq-react`, **enfant direct** de la colonne. On le reconnaît à son propre identifiant ou à sa classe `vidiq-react`, jamais à la présence de vidIQ à l'intérieur : vidIQ pose ses badges dans les cartes suggérées, et sa classe `vidiq-scope` sur des conteneurs **de YouTube** (l'en-tête des commentaires, `#panels`). Un repérage trop large aurait masqué les suggestions, voire le panneau de transcription.
+
+Il est **masqué**, pas supprimé (attribut `data-yttools-hidden`) : supprimé, vidIQ le réinsérerait aussitôt. Le masquage et la disparition du classement ne valent que pour la vidéo résumée.
+
+### Les timecodes manquants
+
+Gemini oublie parfois les timecodes malgré la consigne. Deux étages : le prompt donne un **modèle à recopier** et rappelle la consigne **après** la transcription, ce qui est bien mieux suivi qu'une phrase noyée avant un long texte. Et si un point en manque quand même, on le rapproche localement d'un passage de la transcription : mots rares en commun, pondérés par leur rareté, sur une **fenêtre glissante de 20 s sur les segments**. Pas sur les tranches du prompt : leurs frontières coupent les sujets en deux, et le timecode tombait quelques secondes trop tard. Un point qui ne ressemble à rien reste sans timecode — on n'invente pas.
+
+## Le résumé des commentaires
+
+Repères lus sur une vraie page : `ytd-comment-thread-renderer` > `ytd-comment-view-model`, avec `#author-text`, `#content-text`, `#vote-count-middle`, `#more-replies`. Piège : `#pinned-comment-badge` et `#creator-heart` existent sur **tous** les commentaires, vides quand ils ne s'appliquent pas. Un repérage par présence aurait marqué chaque commentaire comme épinglé.
+
+YouTube charge la suite quand `ytd-continuation-item-renderer` entre à l'écran : on l'y amène, on attend, on recommence jusqu'à 100 commentaires, 20 s ou quatre tours sans nouveauté, puis on remet la page à sa position.
+
+## Le scintillement de la colonne de droite
+
+Sur la vraie page, les suggestions ne sont pas enfants directs de `#secondary-inner` : elles vivent dans `#related`. Le classement, qui ne les cherchait que parmi les enfants directs, retombait en tête de colonne — là où le résumé (et vidIQ) veulent aussi être. Chacun se remettait en tête à chaque passage : la colonne scintillait.
+
+Deux corrections. Le repère est cherché à toute profondeur, puis ramené à l'enfant direct qui le contient — la rangée de filtres comprise, pour ne pas la séparer de la liste qu'elle filtre. Et tout déplacement passe par `moveGently` : au-delà de 4 en 4 s, on **cède la place** plutôt que d'entrer dans une bataille sans fin avec une autre extension.
+
 ## Le CSV
 
 Champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien. Le **BOM UTF-8** n'est ajouté que dans le fichier téléchargé, jamais dans le presse-papiers — collé dans un agent IA, il n'aurait servi qu'à polluer la première ligne.
