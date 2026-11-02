@@ -222,4 +222,6 @@
     place: placer,
     refresh: rafraichir
   });
+
+  window.__yttoolsTop10 = true;
 })();

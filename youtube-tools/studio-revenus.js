@@ -29,8 +29,11 @@
 
   const CUR = '(?:[A-Z]{0,3}[$€£¥₹₩₽₺₪₫]|EUR|USD|GBP|CHF|CAD|AUD|JPY)';
   const NUM = "\\d[\\d .,']*(?: ?(?:k|K|M|Md|md|Mrd|B|Bn|Mio))?";
-  const MONEY = new RegExp(`^[+\\-−–~≈]? ?(?:${CUR} ?${NUM}|${NUM} ?${CUR})$`);
-  const MAX = 32;                        // au-dela, c'est une phrase, pas un montant
+  const UN = `[+\\-−–~≈]? ?(?:${CUR} ?${NUM}|${NUM} ?${CUR})`;
+  // Un montant seul, ou une fourchette (« 4 100,00 € à 5 100,00 € », dans
+  // l'infobulle « Votre plage type » du tableau de bord).
+  const MONEY = new RegExp(`^${UN}(?: ?(?:à|a|to|bis|al|[-–—]) ?${UN})?$`);
+  const MAX = 48;                        // au-dela, c'est une phrase, pas un montant
 
   const norm = (s) => String(s || '').replace(/[\s   ]+/g, ' ').trim();
 
