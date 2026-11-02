@@ -1,0 +1,133 @@
+/* YouTube Tools — ajouts a YouTube Studio. Couleurs : variables de Studio,
+   qui suivent deja son theme clair ou sombre. */
+
+/* ------------------------------------------------------- revenus masques */
+
+html.yttools-hide-money .yttools-money:not(.yttools-money-shown),
+html.yttools-hide-money ytcp-video-row .tablecell-revenue .revenue-container:not(.yttools-money-shown) {
+  filter: blur(7px);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Le flou ne s'applique pas aux textes d'un graphique SVG : on les efface. */
+html.yttools-hide-money text.yttools-money:not(.yttools-money-shown) {
+  filter: none;
+  opacity: 0;
+}
+
+/* -------------------------------------------- fleches de tendance des vues */
+
+.yttools-trend {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  vertical-align: -3px;
+  color: var(--ytcp-text-secondary, #606060);
+}
+
+.yttools-trend svg { width: 16px; height: 16px; display: block; }
+.yttools-trend[data-trend="up"] { color: #2ba640; }
+.yttools-trend[data-trend="down"] { color: #e53935; }
+
+/* --------------------------------------------------- zoom de la retention */
+
+/* Pendant le zoom, le graphique de Studio est masque (pas modifie) sous le notre. */
+svg.yttools-rz-on g.aplos-draw-area > :not(.yttools-rz-layer) { visibility: hidden; }
+
+.yttools-rz-fond { fill: transparent; pointer-events: all; cursor: grab; }
+.yttools-rz-grille { stroke: var(--ytcp-ten-percent-layer, rgba(0, 0, 0, .1)); stroke-width: 1; shape-rendering: crispEdges; }
+.yttools-rz-axe { stroke: #9e9e9e; stroke-width: 1; shape-rendering: crispEdges; }
+.yttools-rz-txt { fill: var(--ytcp-text-secondary, #606060); font: 12px "Roboto", "Arial", sans-serif; pointer-events: none; }
+.yttools-rz-info { fill: var(--ytcp-text-secondary, #606060); font: 11px "Roboto", "Arial", sans-serif; opacity: .85; pointer-events: none; }
+.yttools-rz-courbe, .yttools-rz-point { pointer-events: none; }
+.yttools-rz-lecture { stroke: var(--ytcp-text-primary, #0d0d0d); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+.yttools-rz-survol { pointer-events: none; }
+.yttools-rz-repere { stroke: var(--ytcp-text-secondary, #606060); stroke-width: 1; }
+.yttools-rz-repere-point { stroke: var(--ytcp-general-background-a, #fff); stroke-width: 2; }
+.yttools-rz-bulle rect { fill: var(--ytcp-general-background-a, #fff); stroke: var(--ytcp-ten-percent-layer, rgba(0, 0, 0, .15)); }
+.yttools-rz-bulle text { fill: var(--ytcp-text-primary, #0d0d0d); font: 500 12px "Roboto", "Arial", sans-serif; }
+
+/* ------------------------------------------ classement sur 10 du tableau de bord */
+
+#yttools-top10 {
+  margin: 8px 16px 12px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--ytcp-ten-percent-layer, rgba(0, 0, 0, .1));
+  color: var(--ytcp-text-primary, #0d0d0d);
+  font: 13px/18px "Roboto", "Arial", sans-serif;
+}
+
+#yttools-top10 .yttools-t10-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#yttools-top10 .yttools-t10-titre { font-size: 14px; font-weight: 500; }
+
+#yttools-top10 .yttools-t10-onglets {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--ytcp-ten-percent-layer, rgba(0, 0, 0, .06));
+}
+
+#yttools-top10 .yttools-t10-onglets button {
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: transparent;
+  color: var(--ytcp-text-secondary, #606060);
+  font: 500 12px/16px "Roboto", "Arial", sans-serif;
+  cursor: pointer;
+}
+
+#yttools-top10 .yttools-t10-onglets button[aria-selected="true"] {
+  background: var(--ytcp-general-background-a, #fff);
+  color: var(--ytcp-text-primary, #0d0d0d);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+}
+
+#yttools-top10 .yttools-t10-resume {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+#yttools-top10 .yttools-t10-rang { font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#yttools-top10[data-state="first"] .yttools-t10-rang { color: #c98a00; }
+#yttools-top10[data-state="top"] .yttools-t10-rang { color: #2ba640; }
+#yttools-top10[data-state="low"] .yttools-t10-rang { color: #e53935; }
+
+#yttools-top10 .yttools-t10-sous,
+#yttools-top10 .yttools-t10-msg {
+  display: block;
+  margin: 2px 0 8px;
+  color: var(--ytcp-text-secondary, #606060);
+  font-size: 12px;
+}
+
+#yttools-top10 .yttools-t10-liste { display: flex; flex-direction: column; gap: 2px; }
+
+#yttools-top10 .yttools-t10-ligne {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+#yttools-top10 .yttools-t10-ligne:hover { background: var(--ytcp-ten-percent-layer, rgba(0, 0, 0, .05)); }
+#yttools-top10 .yttools-t10-ligne.is-current { background: var(--ytcp-ten-percent-layer, rgba(0, 0, 0, .08)); font-weight: 500; }
+
+#yttools-top10 .yttools-t10-n { width: 16px; flex-shrink: 0; text-align: right; color: var(--ytcp-text-secondary, #606060); font-variant-numeric: tabular-nums; }
+#yttools-top10 .yttools-t10-ligne img { width: 48px; height: 27px; flex-shrink: 0; border-radius: 4px; object-fit: cover; background: var(--ytcp-ten-percent-layer, rgba(0, 0, 0, .08)); }
+#yttools-top10 .yttools-t10-nom { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#yttools-top10 .yttools-t10-vues { flex-shrink: 0; color: var(--ytcp-text-secondary, #606060); font-variant-numeric: tabular-nums; }

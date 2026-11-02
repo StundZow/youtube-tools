@@ -14,7 +14,10 @@ const SETTINGS_DEFAULTS = {
   videosButton: true,
   saveAsFile: false,
   rankBadge: true,
-  captureButton: true
+  captureButton: true,
+  hideRevenue: false,
+  viewsTrend: true,
+  retentionZoom: true
 };
 let settings = { ...SETTINGS_DEFAULTS };
 const DEFAULTS = {
@@ -37,7 +40,8 @@ const el = {
   random: $('randomPos'),
   preview: $('preview'), remove: $('remove'), status: $('status'),
   setTranscript: $('setTranscript'), setVideos: $('setVideos'), setSaveFile: $('setSaveFile'),
-  setRank: $('setRank'), setCapture: $('setCapture')
+  setRank: $('setRank'), setCapture: $('setCapture'),
+  setMoney: $('setMoney'), setTrend: $('setTrend'), setZoom: $('setZoom')
 };
 
 let state = { ...DEFAULTS };
@@ -120,6 +124,9 @@ function render() {
   el.setSaveFile.setAttribute('aria-checked', String(!!settings.saveAsFile));
   el.setRank.setAttribute('aria-checked', String(!!settings.rankBadge));
   el.setCapture.setAttribute('aria-checked', String(!!settings.captureButton));
+  el.setMoney.setAttribute('aria-checked', String(!!settings.hideRevenue));
+  el.setTrend.setAttribute('aria-checked', String(!!settings.viewsTrend));
+  el.setZoom.setAttribute('aria-checked', String(!!settings.retentionZoom));
 
   setImg(el.thumbImg, state.thumb);
   el.drop.classList.toggle('filled', !!state.thumb);
@@ -352,6 +359,9 @@ el.setVideos.addEventListener('click', () => saveSettings({ videosButton: !setti
 el.setSaveFile.addEventListener('click', () => saveSettings({ saveAsFile: !settings.saveAsFile }));
 el.setRank.addEventListener('click', () => saveSettings({ rankBadge: !settings.rankBadge }));
 el.setCapture.addEventListener('click', () => saveSettings({ captureButton: !settings.captureButton }));
+el.setMoney.addEventListener('click', () => saveSettings({ hideRevenue: !settings.hideRevenue }));
+el.setTrend.addEventListener('click', () => saveSettings({ viewsTrend: !settings.viewsTrend }));
+el.setZoom.addEventListener('click', () => saveSettings({ retentionZoom: !settings.retentionZoom }));
 
 load();
 

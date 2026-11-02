@@ -22,7 +22,10 @@
     videosButton: true,       // afficher le bouton d'export des videos
     saveAsFile: false,        // false = presse-papiers, true = telechargement
     rankBadge: true,          // afficher le classement sur 10 (seule fonction qui interroge YouTube)
-    captureButton: true       // bouton capture d'ecran dans le lecteur
+    captureButton: true,      // bouton capture d'ecran dans le lecteur
+    hideRevenue: false,       // Studio : flouter les montants
+    viewsTrend: true,         // Studio : fleches de tendance a cote des vues (page Contenu)
+    retentionZoom: true       // Studio : zoom a la molette dans le graphique de retention
   };
 
   let current = { ...DEFAULTS };

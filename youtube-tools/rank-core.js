@@ -120,7 +120,10 @@
   /* ---------------------------------------------------------------- reseau */
 
   async function browse(deps, body, hl = 'en') {
-    const url = `${deps.base || ''}/youtubei/v1/browse?prettyPrint=false&key=${encodeURIComponent(deps.cfg.key)}`;
+    // La cle est facultative : YouTube Studio n'a pas celle du site public, et
+    // l'appel public fonctionne sans.
+    const key = deps.cfg.key ? `&key=${encodeURIComponent(deps.cfg.key)}` : '';
+    const url = `${deps.base || ''}/youtubei/v1/browse?prettyPrint=false${key}`;
     const res = await deps.fetch(url, {
       method: 'POST',
       credentials: 'omit',                 // aucun cookie : uniquement des donnees publiques
@@ -297,18 +300,58 @@
       if (found.older.length < MIN_OLDER) return { status: 'not-enough' };
 
       const result = rank(current, found, kind, deps.now());
-      if (result.status === 'ok') {
-        try {
-          const titles = await localizedTitles(current.channel, kind,
-            result.entries.filter((e) => !e.current).map((e) => e.id), st.pages, deps.lang, deps);
-          result.entries.forEach((e) => { if (!e.current && titles[e.id]) e.title = titles[e.id]; });
-        } catch { /* titres en anglais plutot que pas de classement du tout */ }
-      }
+      await translate(result, current.channel, kind, st, deps, (e) => !e.current);
       return result;
     });
   }
 
-  const api = { computeRanking, rank, growth, parseViews, parseAgeHours, parseItems, TAB_PARAMS, COMPARED };
+  /** Titres dans la langue de l'utilisateur, pour les entrees que `quoi` designe. */
+  async function translate(result, channel, kind, st, deps, quoi) {
+    if (result.status !== 'ok') return;
+    try {
+      const titles = await localizedTitles(channel, kind,
+        result.entries.filter(quoi).map((e) => e.id), st.pages, deps.lang, deps);
+      result.entries.forEach((e) => { if (quoi(e) && titles[e.id]) e.title = titles[e.id]; });
+    } catch { /* titres en anglais plutot que pas de classement du tout */ }
+  }
+
+  /**
+   * Classement de la DERNIERE video (ou du dernier Short) d'une chaine, pour
+   * YouTube Studio : la, aucune page de lecture ne fournit la video courante,
+   * c'est donc la tete de la liste publique qui la donne.
+   *
+   * Statuts : ok | too-early | empty | not-enough | no-channel | no-config
+   */
+  async function computeLatest(channel, kind, deps) {
+    if (!/^UC[\w-]{22}$/.test(channel || '')) return { status: 'no-channel' };
+    if (!deps.cfg || !TAB_PARAMS[kind]) return { status: 'no-config' };
+
+    return withLock(keyOf(channel, kind), async () => {
+      let st = getState(channel, kind, deps);
+      // Liste en cache depuis plus de 10 min : une video a pu sortir entre-temps,
+      // et c'est justement la tete de liste qui compte ici.
+      if (st.items.length && deps.now() - st.at > STALE_MS) st = resetState(channel, kind, deps);
+      if (!st.items.length && !st.done) await loadPage(st, deps);
+      // Un direct en cours n'a pas de vues : la tete de liste est la premiere video qui en a.
+      const latest = st.items.find((x) => x.views != null);
+      if (!latest) { saveState(st, deps); return { status: 'empty', kind }; }
+
+      const found = await findWithHistory(st, latest.id, deps);
+      saveState(st, deps);
+      if (!found) return { status: 'empty', kind };
+      if (found.older.length < MIN_OLDER) return { status: 'not-enough', kind };
+
+      const published = latest.ageHours == null ? null : latest.fetchedAt - latest.ageHours * 3600e3;
+      const result = rank({ id: latest.id, title: latest.title, views: latest.views, published }, found, kind, deps.now());
+      result.kind = kind;
+      result.latest = { id: latest.id, title: latest.title };
+      await translate(result, channel, kind, st, deps, () => true);
+      if (result.status === 'ok') result.latest.title = (result.entries.find((e) => e.current) || {}).title || latest.title;
+      return result;
+    });
+  }
+
+  const api = { computeRanking, computeLatest, rank, growth, parseViews, parseAgeHours, parseItems, TAB_PARAMS, COMPARED };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.__yttoolsRank = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

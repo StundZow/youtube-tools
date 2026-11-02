@@ -178,11 +178,51 @@
     // manifest.json en dernier : tant qu'il n'est pas ecrit, Chrome garde
     // l'ancienne version au prochain rechargement.
     recus.sort((a, b) => (a.chemin === 'manifest.json') - (b.chemin === 'manifest.json'));
+    const echecs = [];
     for (let i = 0; i < recus.length; i++) {
-      progres(`Installation ${i + 1}/${recus.length} — ${recus[i].chemin}`);
-      const w = await (await fichier(racine, recus[i].chemin)).createWritable();
-      await w.write(recus[i].data);
-      await w.close();
+      const { chemin, data } = recus[i];
+      // Un fichier a ecrire a echoue : on n'annonce pas la nouvelle version.
+      if (chemin === 'manifest.json' && echecs.length) break;
+      progres(`Installation ${i + 1}/${recus.length} — ${chemin}`);
+      try {
+        const h = await fichier(racine, chemin);
+        if (await identique(h, chemin, data)) continue;
+        const w = await h.createWritable();
+        await w.write(data);
+        await w.close();
+      } catch {
+        // Un antivirus peut bloquer un fichier au moment de l'ecrire : on note,
+        // on continue avec les autres, et on le dit a la fin.
+        echecs.push(chemin);
+      }
+    }
+    if (echecs.length) {
+      throw new Error(`${echecs.length} fichier(s) n'ont pas pu être écrits (${echecs.join(', ')}). ` +
+        "Ton antivirus les a peut-être bloqués. Réessaie, ou télécharge la version à la main.");
+    }
+  }
+
+  const TEXTE = /\.(js|css|html|json|md|txt)$/i;
+
+  /**
+   * Le fichier present a-t-il deja ce contenu ? On n'ecrit alors rien : moins
+   * d'ecritures, c'est moins de risques (fichier ouvert, antivirus). Pour du
+   * texte, on ignore les fins de ligne : un depot Git sous Windows les met en
+   * CRLF, GitHub les sert en LF.
+   */
+  async function identique(handle, chemin, data) {
+    try {
+      const actuel = await (await handle.getFile()).arrayBuffer();
+      if (TEXTE.test(chemin)) {
+        const dec = new TextDecoder();
+        const norm = (b) => dec.decode(b).replace(/\r\n/g, '\n');
+        return norm(actuel) === norm(data);
+      }
+      const a = new Uint8Array(actuel);
+      const b = new Uint8Array(data);
+      return a.length === b.length && a.every((x, i) => x === b[i]);
+    } catch {
+      return false;                              // illisible ou absent : on ecrit
     }
   }
 

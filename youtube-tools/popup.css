@@ -253,3 +253,5 @@ input[type="text"]:focus { border-bottom-color: var(--accent); }
 .settings-title { margin: 0 0 12px; font-size: 12.5px; }
 .settings .switch-row + .switch-row { margin-top: 12px; }
 .settings .hint { margin-top: 10px; }
+
+.studio-title { margin-top: 18px; }

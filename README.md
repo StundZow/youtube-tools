@@ -4,7 +4,7 @@
 
 # YouTube Tools
 
-Teste ta miniature, copie une transcription, exporte un feed, situe une vidéo dans sa chaîne — **sans jamais quitter YouTube**.
+Teste ta miniature, copie une transcription, exporte un feed, situe une vidéo dans sa chaîne, lis mieux YouTube Studio — **sans jamais quitter YouTube**.
 
 [**⬇ Télécharger l'extension**](https://github.com/StundZow/youtube-tools/releases/latest/download/youtube-tools.zip) · [Releases](https://github.com/StundZow/youtube-tools/releases)
 
@@ -36,6 +36,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 📸 **Capture d'écran de la vidéo** — un bouton dans le lecteur, image à la résolution réelle, copiée en un clic
 - 💾 **Export des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
 - 🏆 **Classement sur 10** — où se situe la vidéo parmi les 10 dernières de sa chaîne, à âge égal
+- 🎬 **Outils YouTube Studio** — classement Vidéos / Shorts séparés, flèches de tendance à côté des vues, zoom dans la rétention, revenus masqués
 - 🌗 **Thème clair / sombre** — les boutons mesurent le fond de la page et s'y accordent, sans recharger
 - ⚙️ **Paramètres** — chaque outil s'active ou se coupe depuis le popup
 - 🔒 **Aperçu ponctuel** — rien ne s'affiche tant que tu n'as pas cliqué, et tout disparaît dès que tu navigues
@@ -121,6 +122,15 @@ Place de la vidéo parmi les 10 dernières de sa chaîne, **à âge égal** : le
 
 C'est la **seule** fonction qui interroge YouTube — la liste des vidéos d'une chaîne n'est pas dans la page. Elle le fait **sans aucun cookie**, uniquement sur des données publiques, avec un cache de 6 h, et l'interrupteur du popup la coupe entièrement.
 
+### Dans YouTube Studio
+
+Quatre ajouts, inspirés de **Better YouTube Studio** (SQUIDUU) — mais sans jamais lire ta session Google : tout part des chiffres affichés ou des données publiques de la chaîne.
+
+- **Classement sur 10, Vidéos / Shorts séparés** — sur le tableau de bord, la carte *Performances de la dernière vidéo* gagne deux onglets. Chacun classe ton dernier contenu de ce format parmi les 10 derniers **du même format**, à âge égal : une vidéo n'est plus comparée à des Shorts. Même calcul que le classement de la page de lecture (données publiques, sans cookie), donc des estimations proches de celles de Studio, pas identiques.
+- **Flèches de tendance** — page *Contenu*, à côté des vues de chaque vidéo publique : ▲ vert si elle fait mieux que les trois quarts des 10 vidéos précédentes **au même âge**, ▼ rouge si elle fait moins bien, — gris dans la normale. Le survol donne la fourchette habituelle. Calculé uniquement avec les dates et les vues affichées dans la liste : **aucune requête**.
+- **Zoom dans le graphique de rétention** — le graphique reste à sa place, c'est la courbe qui zoome : **molette** vers le haut à l'endroit voulu, vers le bas pour dézoomer, **glisser** (ou Maj + molette) pour se déplacer, **double-clic** pour revenir. L'échelle des % s'adapte à la portion visible, les points de mesure apparaissent, le survol donne l'instant et le pourcentage, et la vue suit la lecture du lecteur de la carte.
+- **Masquer les revenus** — chaque montant de Studio est flouté ; un clic dessus l'affiche. Pour filmer ou partager ton écran. Un titre qui cite un prix n'est jamais flouté : seul un texte qui *est* un montant l'est.
+
 ## Paramètres
 
 | Réglage | Effet |
@@ -129,7 +139,10 @@ C'est la **seule** fonction qui interroge YouTube — la liste des vidéos d'une
 | **Bouton export vidéos** | affiche ou retire le **⤓** en haut de page |
 | **Bouton capture d'écran** | affiche ou retire le **📷** du lecteur |
 | **Enregistrer un fichier** | télécharge un fichier **en plus** de la copie : `.csv` pour les exports, `.png` pour une capture |
-| **Classement sur 10** | affiche le panneau — et coupe les seules requêtes de l'extension |
+| **Classement sur 10** | affiche le panneau, et les onglets Vidéos / Shorts dans Studio — et coupe les seules requêtes de l'extension |
+| **Masquer les revenus** | floute les montants dans YouTube Studio (désactivé par défaut) |
+| **Flèches de tendance des vues** | affiche ou retire les flèches de la page *Contenu* de Studio |
+| **Zoom sur la rétention** | active ou coupe le zoom à la molette dans le graphique de rétention |
 
 Les changements s'appliquent **immédiatement**, sans recharger l'onglet.
 
@@ -142,7 +155,9 @@ Les changements s'appliquent **immédiatement**, sans recharger l'onglet.
 Les images sont redimensionnées puis gardées dans `chrome.storage.local`, sur ta machine. L'extension n'a **aucun serveur** à elle. Deux fonctions sortent du navigateur, et seulement quand tu les utilises :
 
 - les **résumés** envoient la transcription ou les commentaires à **Gemini**, dans ta propre session Google ;
-- le **classement sur 10** lit la liste publique des vidéos de la chaîne, sans cookie.
+- le **classement sur 10** lit la liste publique des vidéos de la chaîne, sans cookie — dans Studio aussi.
+
+Dans **YouTube Studio**, l'extension lit et modifie l'affichage des pages (c'est l'accès à `studio.youtube.com` que demande Chrome), mais ne lit **ni cookie ni session** : flèches, zoom et revenus masqués ne font aucune requête.
 
 La **mise à jour automatique** lit `version.json` sur GitHub, sans cookie. Elle ne contacte jamais YouTube.
 
@@ -156,7 +171,7 @@ Au démarrage du navigateur et à chaque ouverture du popup, l'extension lit [`v
 
 Aucune API ne permet à une extension de réécrire ses propres fichiers : on passe par l'accès aux fichiers du navigateur. La **première fois**, tu désignes le dossier `youtube-tools` (celui qui contient `manifest.json`) et tu autorises la modification. L'autorisation est mémorisée.
 
-Garde-fous : tout est téléchargé **avant** d'écrire quoi que ce soit (une coupure réseau ne laisse pas l'extension à moitié à jour), le dossier choisi doit bien être celui de YouTube Tools, et la seule adresse contactée est `raw.githubusercontent.com`, sans cookie. Ça ne concerne que l'installation « non empaquetée » décrite plus haut. Mécanisme repris de [youtube-ad-tool](https://github.com/Slipers/youtube-ad-tool).
+Garde-fous : tout est téléchargé **avant** d'écrire quoi que ce soit (une coupure réseau ne laisse pas l'extension à moitié à jour), seuls les fichiers qui ont **changé** sont réécrits, le dossier choisi doit bien être celui de YouTube Tools, et la seule adresse contactée est `raw.githubusercontent.com`, sans cookie. Si un fichier ne peut pas être écrit (un antivirus qui le bloque, par exemple), les autres le sont quand même, la page dit lequel, et la nouvelle version n'est pas annoncée tant que tout n'est pas en place. Ça ne concerne que l'installation « non empaquetée » décrite plus haut. Mécanisme repris de [youtube-ad-tool](https://github.com/Slipers/youtube-ad-tool).
 
 ## Lancer les tests
 
@@ -191,17 +206,22 @@ youtube-tools/
 ├── comments.js     résumé des commentaires
 ├── background.js    service worker : ouvre Gemini, rapporte sa réponse ; pastille MAJ
 ├── update-core.js   mise à jour : lit version.json, télécharge, écrit le dossier
-├── update.html/css/js  page de mise à jour
+├── update.html/css, update-page.js  page de mise à jour
 ├── gemini-writer.js pilote de la page Gemini (écrit, envoie, lit la réponse)
 ├── videos.js/css    bouton ⤓ et export des vidéos de la page
 ├── capture.js/css   bouton capture d'écran du lecteur
 ├── rank-core.js     calcul du classement (sans DOM, testable sous Node)
 ├── rank-bridge.js   lecture des données de la vidéo (monde de la page)
 ├── rank.js/css      panneau de la colonne de droite
+├── studio-top10.js     Studio : classement sur 10, onglets Vidéos / Shorts
+├── studio-tendance.js  Studio : flèches de tendance de la page Contenu
+├── studio-retention.js Studio : zoom dans le graphique de rétention
+├── studio-revenus.js   Studio : revenus floutés
+├── studio.css       styles des ajouts à Studio
 ├── tests/           tests du cœur de calcul
 └── icons/           16 / 32 / 48 / 128 px
 ```
 
 ## Crédits
 
-Concept et design d'origine : **PrevYou** par BenjaminCode, design par BastiUi. Le classement sur 10 reprend le modèle de **Better YouTube Studio** par SQUIDUU. Le pilotage de Gemini vient de **Google More**. Cette version est un recodage complet en Manifest V3.
+Concept et design d'origine : **PrevYou** par BenjaminCode, design par BastiUi. Le classement sur 10 reprend le modèle de **Better YouTube Studio** par SQUIDUU, dont viennent aussi les idées des outils Studio. Le pilotage de Gemini vient de **Google More**. Cette version est un recodage complet en Manifest V3.
