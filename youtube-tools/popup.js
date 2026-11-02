@@ -13,7 +13,8 @@ const SETTINGS_DEFAULTS = {
   transcriptButton: true,
   videosButton: true,
   saveAsFile: false,
-  rankBadge: true
+  rankBadge: true,
+  captureButton: true
 };
 let settings = { ...SETTINGS_DEFAULTS };
 const DEFAULTS = {
@@ -36,7 +37,7 @@ const el = {
   random: $('randomPos'),
   preview: $('preview'), remove: $('remove'), status: $('status'),
   setTranscript: $('setTranscript'), setVideos: $('setVideos'), setSaveFile: $('setSaveFile'),
-  setRank: $('setRank')
+  setRank: $('setRank'), setCapture: $('setCapture')
 };
 
 let state = { ...DEFAULTS };
@@ -118,6 +119,7 @@ function render() {
   el.setVideos.setAttribute('aria-checked', String(!!settings.videosButton));
   el.setSaveFile.setAttribute('aria-checked', String(!!settings.saveAsFile));
   el.setRank.setAttribute('aria-checked', String(!!settings.rankBadge));
+  el.setCapture.setAttribute('aria-checked', String(!!settings.captureButton));
 
   setImg(el.thumbImg, state.thumb);
   el.drop.classList.toggle('filled', !!state.thumb);
@@ -349,6 +351,7 @@ el.setTranscript.addEventListener('click', () => saveSettings({ transcriptButton
 el.setVideos.addEventListener('click', () => saveSettings({ videosButton: !settings.videosButton }));
 el.setSaveFile.addEventListener('click', () => saveSettings({ saveAsFile: !settings.saveAsFile }));
 el.setRank.addEventListener('click', () => saveSettings({ rankBadge: !settings.rankBadge }));
+el.setCapture.addEventListener('click', () => saveSettings({ captureButton: !settings.captureButton }));
 
 load();
 

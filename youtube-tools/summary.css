@@ -249,3 +249,15 @@ html[dark] .yttools-ai-card:not([data-theme]) {
   background: rgba(255, 255, 255, .1);
   color: #f1f1f1;
 }
+
+/* ---------------------------------------------- bouton des commentaires
+   Pose dans #additional-section, juste apres « Trier par » : sans marge a
+   gauche, la pastille venait coller (voire mordre) le libelle du tri, et
+   l'alignement sur la ligne de base la decalait de la rangee. */
+
+#yttools-comments-btn {
+  height: 32px;
+  margin: 0 12px 0 16px;
+  vertical-align: middle;
+  align-self: center;
+}

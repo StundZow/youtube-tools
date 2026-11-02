@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Tools",
-  "version": "3.9.0",
+  "version": "3.10.0",
   "description": "Boîte à outils YouTube : aperçu de miniature dans le vrai feed, transcription, résumés de la vidéo et des commentaires par Gemini, export CSV des vidéos et classement sur 10.",
   "icons": {
     "16": "icons/icon16.png",
@@ -43,6 +43,7 @@
         "summary.js",
         "comments.js",
         "videos.js",
+        "capture.js",
         "rank-core.js",
         "rank.js"
       ],
@@ -51,6 +52,7 @@
         "transcript.css",
         "summary.css",
         "videos.css",
+        "capture.css",
         "rank.css"
       ],
       "run_at": "document_idle",

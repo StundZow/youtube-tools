@@ -33,6 +33,7 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 - 📝 **Transcription en CSV** — un bouton à côté du J'aime, timecodes et métadonnées de la vidéo inclus
 - ✨ **Résumé de la vidéo par Gemini** — côte à côte avec la vidéo, timecodes cliquables, point en cours surligné
 - 💬 **Résumé des commentaires** — une centaine chargés automatiquement, ressenti, tendances, critiques et demandes
+- 📸 **Capture d'écran de la vidéo** — un bouton dans le lecteur, image à la résolution réelle, copiée en un clic
 - 💾 **Export des vidéos d'une page** — depuis la barre du haut, sur toutes les pages YouTube
 - 🏆 **Classement sur 10** — où se situe la vidéo parmi les 10 dernières de sa chaîne, à âge égal
 - 🌗 **Thème clair / sombre** — les boutons mesurent le fond de la page et s'y accordent, sans recharger
@@ -106,6 +107,10 @@ position,titre,chaine,vues,vues_num,date,duree,duree_s,multiplicateur,type,url
 
 `position` donne le rang sur la page. `multiplicateur` reprend le `1.4x` de **vidIQ** si l'extension est installée. `type` vaut `video`, `short` ou `playlist`.
 
+### Capture d'écran (bouton 📷, dans le lecteur)
+
+Un appareil photo dans la barre du lecteur, à gauche des sous-titres. Un clic prend l'image affichée **à la résolution de la vidéo** (1920×1080 pour une vidéo en 1080p, quelle que soit la taille de la fenêtre) et la copie dans le presse-papiers, prête à coller. Avec **Enregistrer un fichier**, un `.png` est aussi téléchargé, nommé d'après le titre et l'instant (`ma-video_12m05s.png`). Marche en plein écran. Aucune requête.
+
 ### Classement sur 10 (panneau, colonne de droite)
 
 Place de la vidéo parmi les 10 dernières de sa chaîne, **à âge égal** : les plus anciennes ayant eu plus de temps, on estime combien de vues chacune avait au même âge. Reprise de la fonction du même nom de **Better YouTube Studio** (SQUIDUU), avec le même modèle de calcul.
@@ -122,7 +127,8 @@ C'est la **seule** fonction qui interroge YouTube — la liste des vidéos d'une
 |---|---|
 | **Bouton transcription** | affiche ou retire le **☰** à côté du J'aime |
 | **Bouton export vidéos** | affiche ou retire le **⤓** en haut de page |
-| **Enregistrer un fichier** | télécharge un `.csv` **en plus** de la copie, pour les deux boutons |
+| **Bouton capture d'écran** | affiche ou retire le **📷** du lecteur |
+| **Enregistrer un fichier** | télécharge un fichier **en plus** de la copie : `.csv` pour les exports, `.png` pour une capture |
 | **Classement sur 10** | affiche le panneau — et coupe les seules requêtes de l'extension |
 
 Les changements s'appliquent **immédiatement**, sans recharger l'onglet.
@@ -188,6 +194,7 @@ youtube-tools/
 ├── update.html/css/js  page de mise à jour
 ├── gemini-writer.js pilote de la page Gemini (écrit, envoie, lit la réponse)
 ├── videos.js/css    bouton ⤓ et export des vidéos de la page
+├── capture.js/css   bouton capture d'écran du lecteur
 ├── rank-core.js     calcul du classement (sans DOM, testable sous Node)
 ├── rank-bridge.js   lecture des données de la vidéo (monde de la page)
 ├── rank.js/css      panneau de la colonne de droite

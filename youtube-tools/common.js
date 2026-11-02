@@ -21,7 +21,8 @@
     transcriptButton: true,   // afficher le bouton de transcription
     videosButton: true,       // afficher le bouton d'export des videos
     saveAsFile: false,        // false = presse-papiers, true = telechargement
-    rankBadge: true           // afficher le classement sur 10 (seule fonction qui interroge YouTube)
+    rankBadge: true,          // afficher le classement sur 10 (seule fonction qui interroge YouTube)
+    captureButton: true       // bouton capture d'ecran dans le lecteur
   };
 
   let current = { ...DEFAULTS };
@@ -139,8 +140,11 @@
 
   /** Le BOM evite qu'Excel massacre les accents a l'ouverture du fichier. */
   function downloadText(text, filename) {
+    return downloadBlob(new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }), filename);
+  }
+
+  function downloadBlob(blob, filename) {
     try {
-      const blob = new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -358,6 +362,6 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  window.__yttools = { settings, deliver, copyText, downloadText, keepMounted, applyTheme, isDark, childContaining, suggestionsBlock, moveGently, rankHidden,
+  window.__yttools = { settings, deliver, copyText, downloadText, downloadBlob, keepMounted, applyTheme, isDark, childContaining, suggestionsBlock, moveGently, rankHidden,
     RE, parseCount, parseDuration, slug, stamp };
 })();

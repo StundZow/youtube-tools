@@ -1,0 +1,50 @@
+/* Capture d'ecran : bouton du lecteur, flash et message. */
+
+.yttools-capture-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+}
+
+.yttools-capture-btn svg {
+  display: block;
+  margin: auto;
+}
+
+.yttools-capture-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  animation: yttools-capture-flash .45s ease-out;
+}
+
+@keyframes yttools-capture-flash {
+  0% { opacity: .55; }
+  100% { opacity: 0; }
+}
+
+#yttools-capture-toast {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 71;
+  transform: translate(-50%, -8px);
+  padding: 8px 14px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, .8);
+  color: #fff;
+  font: 500 14px/20px "Roboto", "Arial", sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+#yttools-capture-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
