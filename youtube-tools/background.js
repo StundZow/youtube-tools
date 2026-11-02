@@ -120,3 +120,21 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     .catch((e) => reply({ ok: false, error: String((e && e.message) || e) }));
   return true;                           // reponse asynchrone
 });
+
+/* ------------------------------------------------------------ mise a jour
+ * Au demarrage du navigateur et apres chaque (re)chargement de l'extension, on
+ * regarde sur GitHub si une version plus recente existe. Si oui, une pastille
+ * « MAJ » apparait sur l'icone ; le popup propose alors de l'installer.
+ * Une seule petite requete vers raw.githubusercontent.com, sans cookie.
+ */
+importScripts('update-core.js');
+
+async function pastilleMaj() {
+  const res = await self.__yttoolsUpdate.verifier();
+  const dispo = !!(res && res.disponible);
+  await chrome.action.setBadgeText({ text: dispo ? 'MAJ' : '' });
+  if (dispo) await chrome.action.setBadgeBackgroundColor({ color: '#7226ff' });
+}
+
+chrome.runtime.onStartup.addListener(() => { pastilleMaj(); });
+chrome.runtime.onInstalled.addListener(() => { pastilleMaj(); });

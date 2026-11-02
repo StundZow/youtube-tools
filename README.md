@@ -46,6 +46,8 @@ Parce que ce n'est jamais comme ça qu'elle sera vue. Ce qui compte, c'est la li
 3. **Charger l'extension non empaquetée** → sélectionne le dossier `youtube-tools` obtenu.
 4. Épingle l'extension dans la barre d'outils.
 
+Ensuite, plus besoin de retélécharger : quand une nouvelle version sort, une pastille **MAJ** apparaît sur l'icône et le popup propose **Mettre à jour**. La première fois, Chrome te demande de désigner ce même dossier `youtube-tools` ; les fois suivantes, c'est automatique.
+
 *(Sur Edge, Brave ou Opera : `edge://extensions`, `brave://extensions`, etc. — la marche à suivre est identique.)*
 
 Pour l'aperçu de miniature : clique sur l'icône, renseigne la chaîne, glisse ou colle ta miniature, saisis le titre, puis **Aperçu**. L'onglet YouTube passe au premier plan avec ta carte injectée. **Retirer l'aperçu** l'enlève ; la flèche circulaire remet les champs à zéro.
@@ -136,6 +138,20 @@ Les images sont redimensionnées puis gardées dans `chrome.storage.local`, sur 
 - les **résumés** envoient la transcription ou les commentaires à **Gemini**, dans ta propre session Google ;
 - le **classement sur 10** lit la liste publique des vidéos de la chaîne, sans cookie.
 
+La **mise à jour automatique** lit `version.json` sur GitHub, sans cookie. Elle ne contacte jamais YouTube.
+
+## Mise à jour automatique
+
+Au démarrage du navigateur et à chaque ouverture du popup, l'extension lit [`version.json`](version.json) sur GitHub. Si une version plus récente existe :
+
+1. une pastille **MAJ** s'affiche sur l'icône, et un bandeau **Version x disponible** en haut du popup ;
+2. **Mettre à jour** ouvre une page dédiée, qui montre les nouveautés ;
+3. **Mettre à jour maintenant** télécharge tous les fichiers, les écrit dans le dossier de l'extension, puis la recharge. Rafraîchis ensuite tes onglets YouTube (F5).
+
+Aucune API ne permet à une extension de réécrire ses propres fichiers : on passe par l'accès aux fichiers du navigateur. La **première fois**, tu désignes le dossier `youtube-tools` (celui qui contient `manifest.json`) et tu autorises la modification. L'autorisation est mémorisée.
+
+Garde-fous : tout est téléchargé **avant** d'écrire quoi que ce soit (une coupure réseau ne laisse pas l'extension à moitié à jour), le dossier choisi doit bien être celui de YouTube Tools, et la seule adresse contactée est `raw.githubusercontent.com`, sans cookie. Ça ne concerne que l'installation « non empaquetée » décrite plus haut. Mécanisme repris de [youtube-ad-tool](https://github.com/Slipers/youtube-ad-tool).
+
 ## Lancer les tests
 
 ```bash
@@ -150,7 +166,7 @@ Le cœur du classement, contre de vraies chaînes publiques. Environ 11 requête
 node release.js "Ce qui change"
 ```
 
-Le script lit le numéro de version dans `youtube-tools/manifest.json` — seule source de vérité —, fabrique l'archive, crée le tag et publie la release. L'archive porte toujours le même nom, donc le lien de téléchargement du README ne change jamais. Nécessite [GitHub CLI](https://cli.github.com/) authentifié, et un dépôt propre et poussé.
+Le script lit le numéro de version dans `youtube-tools/manifest.json` — seule source de vérité —, écrit et pousse `version.json` (la version, le commit publié et la liste de ses fichiers, que lit la mise à jour automatique), fabrique l'archive, crée le tag et publie la release. L'archive porte toujours le même nom, donc le lien de téléchargement du README ne change jamais. Nécessite [GitHub CLI](https://cli.github.com/) authentifié, et un dépôt propre et poussé.
 
 ## Sous le capot
 
@@ -167,7 +183,9 @@ youtube-tools/
 ├── transcript.js/css   bouton ☰ et export de la transcription
 ├── summary.js/css   résumé de la vidéo, et interface commune des résumés
 ├── comments.js     résumé des commentaires
-├── background.js    service worker : ouvre Gemini, rapporte sa réponse
+├── background.js    service worker : ouvre Gemini, rapporte sa réponse ; pastille MAJ
+├── update-core.js   mise à jour : lit version.json, télécharge, écrit le dossier
+├── update.html/css/js  page de mise à jour
 ├── gemini-writer.js pilote de la page Gemini (écrit, envoie, lit la réponse)
 ├── videos.js/css    bouton ⤓ et export des vidéos de la page
 ├── rank-core.js     calcul du classement (sans DOM, testable sous Node)

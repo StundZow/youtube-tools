@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Mise à jour — YouTube Tools</title>
+  <link rel="stylesheet" href="popup.css" />
+  <link rel="stylesheet" href="update.css" />
+</head>
+<body class="page-maj">
+  <main class="card">
+    <h1 class="title"><span class="eyes">👀</span> YouTube Tools</h1>
+    <p id="etat" class="maj-etat">Vérification…</p>
+    <p id="notes" class="maj-notes" hidden></p>
+
+    <button id="installer" class="cta" type="button" hidden>Mettre à jour maintenant</button>
+    <p id="progres" class="maj-progres" role="status" hidden></p>
+
+    <p class="hint">
+      La première fois, Chrome te demande de choisir le dossier de l'extension
+      (celui qui contient <code>manifest.json</code>) et l'autorisation de le modifier.
+      Ensuite, c'est automatique.
+    </p>
+    <button id="manuel" class="ghost" type="button">Télécharger à la main sur GitHub</button>
+  </main>
+  <script src="update-core.js"></script>
+  <script src="update.js"></script>
+</body>
+</html>

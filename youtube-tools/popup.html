@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>YouTube Tools</title>
   <link rel="stylesheet" href="popup.css" />
+  <link rel="stylesheet" href="update.css" />
 </head>
 <body>
   <main class="card">
@@ -27,6 +28,11 @@
         </svg>
       </button>
     </header>
+
+    <div id="maj" class="maj-bandeau" role="status" hidden>
+      <span id="majTexte"></span>
+      <button id="majBtn" type="button">Mettre à jour</button>
+    </div>
 
     <section class="field row">
       <button id="avatarBtn" class="avatar" type="button" title="Choisir un avatar de chaîne" aria-label="Avatar de la chaîne">
@@ -107,6 +113,7 @@
 
   <input id="thumbFile" type="file" accept="image/*" hidden />
   <input id="avatarFile" type="file" accept="image/*" hidden />
+  <script src="update-core.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

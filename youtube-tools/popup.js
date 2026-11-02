@@ -351,3 +351,25 @@ el.setSaveFile.addEventListener('click', () => saveSettings({ saveAsFile: !setti
 el.setRank.addEventListener('click', () => saveSettings({ rankBadge: !settings.rankBadge }));
 
 load();
+
+/* ------------------------------------------------------------ mise a jour */
+
+// Le dernier resultat connu s'affiche tout de suite, puis GitHub confirme.
+function bandeauMaj(info) {
+  const dispo = !!(info && info.disponible);
+  $('maj').hidden = !dispo;
+  if (dispo) $('majTexte').textContent = `Version ${info.latest} disponible`;
+}
+
+$('majBtn').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('update.html') });
+  window.close();
+});
+
+window.__yttoolsUpdate.dernierConnu().then(bandeauMaj);
+window.__yttoolsUpdate.verifier().then((info) => {
+  if (!info) return;                          // hors ligne : on garde l'etat connu
+  bandeauMaj(info);
+  chrome.action.setBadgeText({ text: info.disponible ? 'MAJ' : '' });
+  chrome.action.setBadgeBackgroundColor({ color: '#7226ff' });
+});

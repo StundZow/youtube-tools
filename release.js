@@ -13,6 +13,10 @@
  * L'archive porte TOUJOURS le meme nom, `youtube-tools.zip`. C'est ce qui
  * permet au lien du README de pointer vers
  * `releases/latest/download/youtube-tools.zip` sans jamais changer.
+ *
+ * Il ecrit aussi `version.json` a la racine du depot (puis le committe et le
+ * pousse) : c'est ce fichier que l'extension lit pour proposer la mise a jour
+ * automatique. Il pointe vers le commit publie, pas vers une branche qui bouge.
  */
 
 const { execFileSync } = require('child_process');
@@ -46,6 +50,26 @@ const [retard, avance] = sh('git', ['rev-list', '--left-right', '--count', 'orig
 if (avance) echoue(avance + ' commit(s) non pousse(s). Fais `git push` avant de publier.');
 if (retard) echoue(retard + ' commit(s) de retard sur origin. Fais `git pull` avant de publier.');
 
+const notes = process.argv[2] || sh('git', ['log', '-1', '--pretty=%s']);
+
+/* ------------------------------------------------------------- version.json */
+
+// Le commit publie : ses fichiers sont exactement ceux de l'archive.
+const ref = sh('git', ['rev-parse', 'HEAD']);
+const files = sh('git', ['ls-files', DOSSIER]).split('\n')
+  .map((f) => f.slice(DOSSIER.length + 1))
+  .filter((f) => f && !f.startsWith('tests/'));
+const INFO = path.join(RACINE, 'version.json');
+const info = JSON.stringify({ version, ref, files, notes,
+  download: 'https://github.com/StundZow/youtube-tools/releases/latest' }, null, 2) + '\n';
+if (!fs.existsSync(INFO) || fs.readFileSync(INFO, 'utf8') !== info) {
+  fs.writeFileSync(INFO, info);
+  sh('git', ['add', 'version.json']);
+  sh('git', ['commit', '--quiet', '-m', `version.json : ${tag}`]);
+  sh('git', ['push', '--quiet', 'origin', 'HEAD:main']);
+  console.log(`version.json : ${version} (${files.length} fichiers, commit ${ref.slice(0, 7)})`);
+}
+
 /* ------------------------------------------------------------------ archive */
 
 fs.mkdirSync(path.dirname(ARCHIVE), { recursive: true });
@@ -60,8 +84,6 @@ const poids = (fs.statSync(ARCHIVE).size / 1024).toFixed(0);
 console.log(`archive : dist/${DOSSIER}.zip  (${poids} Ko)`);
 
 /* ------------------------------------------------------------------ release */
-
-const notes = process.argv[2] || sh('git', ['log', '-1', '--pretty=%s']);
 
 let existe = true;
 try { sh('gh', ['release', 'view', tag], { stdio: 'pipe' }); } catch { existe = false; }

@@ -160,6 +160,20 @@ Sur la vraie page, les suggestions ne sont pas enfants directs de `#secondary-in
 
 Deux corrections. Le repère est cherché à toute profondeur, puis ramené à l'enfant direct qui le contient — la rangée de filtres comprise, pour ne pas la séparer de la liste qu'elle filtre. Et tout déplacement passe par `moveGently` : au-delà de 4 en 4 s, on **cède la place** plutôt que d'entrer dans une bataille sans fin avec une autre extension.
 
+## La mise à jour automatique
+
+Reprise de [youtube-ad-tool](https://github.com/Slipers/youtube-ad-tool). Une extension ne peut pas réécrire ses fichiers ; mais chargée « non empaquetée », le dossier choisi **est** le code que Chrome exécute. On y écrit avec l'API File System Access (`showDirectoryPicker`), puis `chrome.runtime.reload()`. Le handle du dossier est gardé dans IndexedDB, le seul stockage capable de le conserver : la permission n'est demandée qu'une fois.
+
+- `version.json`, écrit par `release.js`, pointe vers le **commit** publié (`ref`), pas vers `main` : les fichiers téléchargés sont exactement ceux de l'archive, même si `main` a avancé depuis ;
+- liste des fichiers = `git ls-files youtube-tools` sans `tests/`. Les chemins avec `..` ou absolus sont ignorés ;
+- tout est téléchargé avant la première écriture, et `manifest.json` est écrit **en dernier** ;
+- avant d'écrire, on vérifie que le `manifest.json` du dossier s'appelle bien YouTube Tools ;
+- `chrome.management.getSelf()` (sans permission) dit si l'installation est « development » : sinon, rien n'est vérifié ni proposé ;
+- le sélecteur de dossier fermerait le popup : l'installation se fait dans un onglet, `update.html` ;
+- `raw.githubusercontent.com` répond `Access-Control-Allow-Origin: *` : **aucune permission ajoutée**.
+
+Un fichier supprimé d'une version à l'autre reste dans le dossier. Sans conséquence : le manifeste ne le référence plus.
+
 ## Le CSV
 
 Champs entre guillemets et échappés (RFC 4180) : les virgules et guillemets du texte ne cassent rien. Le **BOM UTF-8** n'est ajouté que dans le fichier téléchargé, jamais dans le presse-papiers — collé dans un agent IA, il n'aurait servi qu'à polluer la première ligne.

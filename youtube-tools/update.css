@@ -1,0 +1,61 @@
+/* Page de mise a jour : la carte du popup, centree dans un onglet. */
+body.page-maj {
+  width: auto;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 60px 16px;
+}
+
+.page-maj .card {
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.page-maj .title { margin-bottom: 18px; }
+.page-maj .ghost { margin-top: 10px; }
+
+.maj-etat { margin: 0 0 10px; font-weight: 600; line-height: 1.45; }
+
+.maj-notes {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.maj-progres { margin: 10px 0 0; color: var(--muted); line-height: 1.45; }
+.maj-progres.is-err { color: #d93025; }
+
+/* ---------- bandeau dans le popup ---------- */
+.maj-bandeau {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -6px 0 18px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.maj-bandeau span { flex: 1; }
+
+.maj-bandeau button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.maj-bandeau button:hover { background: var(--accent-hover); }
