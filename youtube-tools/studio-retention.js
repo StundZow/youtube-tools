@@ -191,7 +191,8 @@
     svgEl('rect', { x: 0, y: 0, width: w, height: h, class: 'yttools-rz-fond' }, L);
 
     const pas = pasRond(hi - lo, 4);
-    st.dec = pas < 1 ? 1 : 0;
+    // Un pas de 2,5 ou de 0,5 exige une decimale, sinon « 42,5 % » s'affiche « 43 % ».
+    st.dec = Number.isInteger(Math.round(pas * 1000) / 1000) ? 0 : 1;
     for (let r = Math.ceil(lo / pas) * pas; r <= hi + 1e-9; r += pas) {
       const y = Y(r);
       svgEl('line', { x1: 0, x2: w, y1: y, y2: y, class: 'yttools-rz-grille' }, L);
