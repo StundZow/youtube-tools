@@ -1,8 +1,10 @@
 {
-  "version": "3.9.0",
-  "ref": "ff21282b77afaf872e115fb0fc2dbb78f6582803",
+  "version": "3.10.0",
+  "ref": "bfabce17f5bb91368699ebc61f92f603486a50cb",
   "files": [
     "background.js",
+    "capture.css",
+    "capture.js",
     "comments.js",
     "common.js",
     "content.css",
@@ -31,6 +33,6 @@
     "videos.css",
     "videos.js"
   ],
-  "notes": "Mise à jour automatique : pastille MAJ sur l'icône et bouton « Mettre à jour » dans le popup, qui installe la nouvelle version directement dans le dossier de l'extension. Cette version 3.9.0 est à installer une dernière fois à la main.",
+  "notes": "Capture d'écran de la vidéo (bouton 📷 dans le lecteur, image en pleine résolution copiée en un clic). Bouton « Résumer les commentaires » qui ne colle plus à « Trier par ».",
   "download": "https://github.com/StundZow/youtube-tools/releases/latest"
 }
