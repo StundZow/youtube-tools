@@ -134,7 +134,18 @@
 
   function poser(cell, id, r) {
     const ex = cell.querySelector('.' + CLS);
-    if (!r) { if (ex) ex.remove(); return; }
+    // Pas de fleche : un emplacement vide de la meme largeur, pour que les
+    // nombres de la colonne restent alignes.
+    if (!r) {
+      if (ex && ex.dataset.trend === 'none') return;
+      if (ex) ex.remove();
+      const vide = document.createElement('span');
+      vide.className = CLS;
+      vide.dataset.trend = 'none';
+      vide.setAttribute('aria-hidden', 'true');
+      cell.append(vide);
+      return;
+    }
     // Signature sur les valeurs AFFICHEES (arrondies) : les estimations bougent
     // un peu a chaque seconde avec l'age, la fleche ne doit pas etre refaite pour ca.
     const sig = `${id}|${r.t}|${compact(r.bas)}|${compact(r.haut)}|${r.n}|${dureeLisible(r.age)}`;
