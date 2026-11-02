@@ -1,6 +1,6 @@
 {
-  "version": "3.10.0",
-  "ref": "bfabce17f5bb91368699ebc61f92f603486a50cb",
+  "version": "3.11.0",
+  "ref": "52d068c2ab68c669a2592b8e100a2bbb6826ec05",
   "files": [
     "background.js",
     "capture.css",
@@ -22,17 +22,22 @@
     "rank-core.js",
     "rank.css",
     "rank.js",
+    "studio-retention.js",
+    "studio-revenus.js",
+    "studio-tendance.js",
+    "studio-top10.js",
+    "studio.css",
     "summary.css",
     "summary.js",
     "transcript.css",
     "transcript.js",
     "update-core.js",
+    "update-page.js",
     "update.css",
     "update.html",
-    "update.js",
     "videos.css",
     "videos.js"
   ],
-  "notes": "Capture d'écran de la vidéo (bouton 📷 dans le lecteur, image en pleine résolution copiée en un clic). Bouton « Résumer les commentaires » qui ne colle plus à « Trier par ».",
+  "notes": "Outils YouTube Studio : classement sur 10 avec onglets Vidéos / Shorts séparés sur le tableau de bord ; flèches de tendance à côté des vues (page Contenu) ; zoom à la molette dans le graphique de rétention, sur place ; option « Masquer les revenus ». Mise à jour automatique réparée : Windows Defender bloquait à tort l'ancien script de la page de mise à jour.",
   "download": "https://github.com/StundZow/youtube-tools/releases/latest"
 }
